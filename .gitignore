@@ -104,3 +104,8 @@ imgui.ini
 *.CIA
 *.CXI
 *.SAV
+
+# Agent session workspaces (plans, scratch extractions)
+.local/
+.omp/
+.scratch/
