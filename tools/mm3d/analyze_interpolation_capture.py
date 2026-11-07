@@ -149,7 +149,7 @@ def main():
     parser.add_argument('capture', type=Path)
     parser.add_argument('--output', type=Path)
     args = parser.parse_args()
-    capture = json.loads(args.capture.read_text())
+    capture = json.loads(args.capture.read_text(encoding='utf-8'))
     report = {'label': capture.get('label', ''),
               'warning': 'Candidates only. No object identity, camera matrix, native FPS, or replay safety is established.',
               'stop_reason': capture.get('stop_reason'),

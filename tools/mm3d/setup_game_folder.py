@@ -29,7 +29,7 @@ def select(roms, actual):
 
 
 def validate(rom):
-    roms = json.loads((RESOURCES / 'supported-rom.json').read_text())['roms']
+    roms = json.loads((RESOURCES / 'supported-rom.json').read_text(encoding='utf-8'))['roms']
     selected = select(roms, probe(rom))
     if selected is None:
         raise ValueError('Unsupported ROM revision/content; expected the verified decrypted USA or Europe Rev 1 dump')
@@ -98,7 +98,7 @@ def _read(stream, at, count):
 
 
 def extract(rom, output):
-    manifest = json.loads((RESOURCES / 'setup-fingerprints.json').read_text())
+    manifest = json.loads((RESOURCES / 'setup-fingerprints.json').read_text(encoding='utf-8'))
     wanted = {e['input'][6:] for e in manifest['files'] if e['input_root'] == 'original'}
     wanted.add('layout/Joker.Main.Play.gar')
     tid = title_id(rom)
@@ -114,7 +114,7 @@ def rus_overlay(block):
     # Vendored RU overlay under resources/mm3d/rus; every file is verified
     # against the overlay manifest before it can reach the installed tree.
     manifest_path = RESOURCES / block['manifest']
-    manifest = json.loads(manifest_path.read_text())
+    manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
     files = {}
     for entry in manifest['files']:
         data = (manifest_path.parent / entry['path']).read_bytes()
@@ -141,7 +141,7 @@ def setup(root, restoration, selected_rom=None, copy_game=True, reference_game=F
     try:
         original = stage/'setup/original'
         extract(rom,original)
-        profile=json.loads((RESOURCES / 'setup-fingerprints.json').read_text())['titles'][title]
+        profile=json.loads((RESOURCES / 'setup-fingerprints.json').read_text(encoding='utf-8'))['titles'][title]
         mod_root=stage/('load/mods/'+title)
         rus=rus_overlay(profile['rus']) if 'rus' in profile else None
         if rus is not None:
@@ -162,7 +162,7 @@ def setup(root, restoration, selected_rom=None, copy_game=True, reference_game=F
         (stage/('load/textures/'+title)).mkdir(parents=True)
         shutil.copytree(RESOURCES/'defaults',stage/'config/mm3d-local')
         write(stage, 'config/qt-config.ini', b'[Utility]\ncustom_textures=true\ncustom_textures\\default=false\n[Layout]\nlayout_option=1\nlayout_option\\default=false\n[Renderer]\nuse_hw_shader=false\nuse_hw_shader\\default=false\nasync_shader_compilation=false\nasync_shader_compilation\\default=false\nuse_disk_shader_cache=false\nuse_disk_shader_cache\\default=false\nuse_vsync=true\nuse_vsync\\default=true\nresolution_factor=4\nresolution_factor\\default=false\ngraphics_api=2\ngraphics_api\\default=false\n')
-        p=stage/'config/mm3d-local/notebook.json'; obj=json.loads(p.read_text())
+        p=stage/'config/mm3d-local/notebook.json'; obj=json.loads(p.read_text(encoding='utf-8'))
         obj['source_archive']='setup/original/romfs/layout/Joker.Main.Play.SubMenu.gar'
         obj['fade_source']='setup/original/romfs/layout/Joker.gar'
         p.write_text(json.dumps(obj,indent=2)+'\n')

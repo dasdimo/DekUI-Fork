@@ -52,8 +52,8 @@ class BpsOverlayTests(unittest.TestCase):
         repo=Path(__file__).resolve().parents[2]
         root=repo/'src/android/app/src/main/assets/dekui-pc-controls'
         baseline=(repo/'resources/mm3d/project-restoration/code.bps').read_bytes()
-        spec=json.loads((root/'provenance.json').read_text())
-        recipe=json.loads((root/'input-edits.json').read_text())
+        spec=json.loads((root/'provenance.json').read_text(encoding='utf-8'))
+        recipe=json.loads((root/'input-edits.json').read_text(encoding='utf-8'))
         patch=(root/'code.bps').read_bytes()
         self.assertEqual(overlay(baseline,recipe),patch)
         self.assertEqual(hashlib.sha256(patch).hexdigest(),spec['patch_sha256'])

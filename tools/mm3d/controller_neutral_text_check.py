@@ -64,4 +64,4 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('gmsg', type=Path)
     args = parser.parse_args()
-    check(args.gmsg.read_bytes(), json.loads(SPEC.read_text()))
+    check(args.gmsg.read_bytes(), json.loads(SPEC.read_text(encoding='utf-8')))

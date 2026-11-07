@@ -63,7 +63,7 @@ def prepare(stage, index_json, library, reader):
     seen = set()
     matched = 0
     duplicates = 0
-    for t in json.loads((stage / "texture-manifest.json").read_text()):
+    for t in json.loads((stage / "texture-manifest.json").read_text(encoding='utf-8')):
         raw = (stage / t["file"]).read_bytes()
         ha = f"{hashfn(raw,len(raw)):016X}"
         if ha in seen:

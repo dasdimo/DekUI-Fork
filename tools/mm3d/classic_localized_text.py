@@ -164,7 +164,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     localized_rows, assets = collect(args.source, [name for name in SPEC if name != 'eue'])
     root = ROOT/'resources/mm3d/project-restoration'
-    manifest = json.loads((root/'manifest.json').read_text())
+    manifest = json.loads((root/'manifest.json').read_text(encoding='utf-8'))
     for name, data in assets.items():
         rel = 'romfs/message/us/'+name
         (root/'romfs/message/us').mkdir(parents=True,exist_ok=True)

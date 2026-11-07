@@ -6,7 +6,7 @@ sys.path.insert(0, str(ROOT / 'tools/mm3d'))
 import single_screen_text as text
 
 RU_ARCHIVE = ROOT / 'resources/mm3d/rus/message/eu/eue.gmsg'
-RU_SPEC = json.loads((ROOT / 'resources/mm3d/text/single-screen-russian.json').read_text())
+RU_SPEC = json.loads((ROOT / 'resources/mm3d/text/single-screen-russian.json').read_text(encoding='utf-8'))
 HEADER = ROOT / 'src/mm3d/single_screen_localized_data.h'
 
 

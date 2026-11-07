@@ -153,7 +153,7 @@ def header(rows):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('gmsg',type=Path);p.add_argument('--header',type=Path);p.add_argument('--review',type=Path);a=p.parse_args()
-    spec=json.loads(SPEC.read_text())
+    spec=json.loads(SPEC.read_text(encoding='utf-8'))
     rows=compile_messages(a.gmsg.read_bytes(),spec)
     if a.header:
         basic=compile_messages(a.gmsg.read_bytes(),dict(spec,neutral_runs=[]))

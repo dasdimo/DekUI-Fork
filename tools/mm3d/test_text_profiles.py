@@ -5,7 +5,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'tools/mm3d'))
 import build_release_assets, classic_localized_text, classic_owl_text, single_screen_text as text
 
-FINGERPRINTS = json.loads((ROOT / 'resources/mm3d/setup-fingerprints.json').read_text())
+FINGERPRINTS = json.loads((ROOT / 'resources/mm3d/setup-fingerprints.json').read_text(encoding='utf-8'))
 
 # Stock English owl prompt payload, byte-identical in the USA and Europe
 # archives (verified against both verified Rev 1 partitions).

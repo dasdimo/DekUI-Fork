@@ -24,8 +24,8 @@ def close(a, b):
 
 
 def policy(resources):
-    data = json.loads((resources/RESOURCE).read_text())
-    current = json.loads((resources/'defaults/presentation.json').read_text())
+    data = json.loads((resources/RESOURCE).read_text(encoding='utf-8'))
+    current = json.loads((resources/'defaults/presentation.json').read_text(encoding='utf-8'))
     if data['version'] != VERSION or data['current'] != current:
         raise ValueError('Layout defaults changed without an updated migration policy')
     # Every profile participates in the release gate, even those with no migration.

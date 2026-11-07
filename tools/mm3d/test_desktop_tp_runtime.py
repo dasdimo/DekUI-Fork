@@ -17,7 +17,7 @@ class NumpyMetadataTests(unittest.TestCase):
             runtime = config.parent / 'keep.bin'
             runtime.write_bytes(b'unchanged runtime')
             sanitize_numpy_metadata(root)
-            source = config.read_text()
+            source = config.read_text(encoding='utf-8')
             self.assertNotIn('Builder', source)
             values = {}
             exec(compile(source, '__config__.py', 'exec'), values)

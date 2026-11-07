@@ -163,4 +163,4 @@ if __name__ == '__main__':
     parser.add_argument('recipe', type=Path)
     parser.add_argument('output', type=Path)
     args = parser.parse_args()
-    args.output.write_bytes(overlay(args.baseline.read_bytes(), json.loads(args.recipe.read_text())))
+    args.output.write_bytes(overlay(args.baseline.read_bytes(), json.loads(args.recipe.read_text(encoding='utf-8'))))

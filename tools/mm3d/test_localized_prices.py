@@ -6,8 +6,8 @@ sys.path.insert(0, str(ROOT / 'tools/mm3d'))
 import localized_prices
 
 RU_ARCHIVE = ROOT / 'resources/mm3d/rus/message/eu/eue.gmsg'
-SPEC = json.loads((ROOT / 'resources/mm3d/text/double-prices.json').read_text())
-ADJUSTMENTS = json.loads((ROOT / 'resources/mm3d/text/prices-russian.json').read_text())
+SPEC = json.loads((ROOT / 'resources/mm3d/text/double-prices.json').read_text(encoding='utf-8'))
+ADJUSTMENTS = json.loads((ROOT / 'resources/mm3d/text/prices-russian.json').read_text(encoding='utf-8'))
 HEADER = (ROOT / 'src/mm3d/localized_price_data.h').read_text(encoding='utf-8')
 
 

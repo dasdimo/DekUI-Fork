@@ -10,7 +10,7 @@ p.add_argument('stage',type=Path)
 p.add_argument('output',type=Path)
 a=p.parse_args()
 root=Path(__file__).resolve().parents[3]
-m=json.loads((root/'resources/mm3d/setup-fingerprints.json').read_text())
+m=json.loads((root/'resources/mm3d/setup-fingerprints.json').read_text(encoding='utf-8'))
 mods_dirs=[p for p in (a.stage/'mods').iterdir() if p.is_dir()]
 assert len(mods_dirs)==1, 'Expected exactly one title profile in the stage'
 mods=mods_dirs[0]

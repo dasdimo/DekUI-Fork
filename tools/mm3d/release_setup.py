@@ -109,7 +109,7 @@ def capture(args, stage):
 
 
 def replay(args, stage):
-    recipe = json.loads((args.recipe / 'recipe.json').read_text())
+    recipe = json.loads((args.recipe / 'recipe.json').read_text(encoding='utf-8'))
     if recipe['version'] != 1:
         raise ValueError('Unsupported recipe version')
     if not re.fullmatch(r'[0-9A-Fa-f]{16}', str(recipe.get('title_id') or '')):

@@ -14,7 +14,7 @@ def build(source, russian=None):
     russian = ROOT/'resources/mm3d/rus/message/eu/eue.gmsg' if russian is None else russian
     for language, archive, array in [('french', 'usf', 'FrenchReplacements'),
 ('spanish', 'uss', 'SpanishReplacements'), ('russian', 'eue', 'RussianReplacements')]:
-        spec = json.loads((ROOT/f'resources/mm3d/text/single-screen-{language}.json').read_text())
+        spec = json.loads((ROOT/f'resources/mm3d/text/single-screen-{language}.json').read_text(encoding='utf-8'))
         source_path = russian if language == 'russian' else source/f'{archive}.gmsg'
         rows = compile_messages((source_path).read_bytes(), spec)
         for mid, _, _, data, tokens, _ in rows:

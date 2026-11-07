@@ -25,7 +25,7 @@ def prepare(root, rom, patch=None, exheader=None, hud=None, in_place=False, upgr
         if len(matches) != 1:
             raise ValueError(f'HD HUD folder must contain exactly one {name}. Extract the complete Majora ReMasked package again.')
         selected['romfs/layout/'+name] = matches[0]
-    expected = json.loads((RESOURCES/'setup-fingerprints.json').read_text())
+    expected = json.loads((RESOURCES/'setup-fingerprints.json').read_text(encoding='utf-8'))
     for entry in expected['files']:
         if entry['input_root'] != 'restoration': continue
         path = selected[entry['input']]

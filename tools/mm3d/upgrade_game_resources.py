@@ -16,7 +16,7 @@ RESOURCE_VERSION = 2
 # an upgrade installs exactly the dialogue archives its own ROM extraction owns.
 def _title_message_targets():
     manifest = json.loads((Path(__file__).resolve().parents[2] /
-                           'resources/mm3d/setup-fingerprints.json').read_text())
+                           'resources/mm3d/setup-fingerprints.json').read_text(encoding='utf-8'))
     targets = {}
     for title, profile in manifest['titles'].items():
         messages = profile['messages']
@@ -195,7 +195,7 @@ def upgrade(root, rom, restoration):
     user = root/'user'
     with locked(user):
         expected_roms = {entry['main_partition_sha256']
-                         for entry in json.loads((RESOURCES/'supported-rom.json').read_text())['roms']}
+                         for entry in json.loads((RESOURCES/'supported-rom.json').read_text(encoding='utf-8'))['roms']}
         ready = json.loads(checked(user, READY).read_bytes())
         if ready.get('version') != 1 or ready.get('rom_sha256') not in expected_roms:
             raise ValueError('Unrecognized game setup. Existing user data was not replaced.')

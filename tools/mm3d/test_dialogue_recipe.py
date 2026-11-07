@@ -35,7 +35,7 @@ class DialogueRecipes(unittest.TestCase):
 
     def test_review_specs_do_not_retain_original_dialogue(self):
         for path in (ROOT/'resources/mm3d/text').glob('single-screen*.json'):
-            spec = json.loads(path.read_text())
+            spec = json.loads(path.read_text(encoding='utf-8'))
             for edit in spec['edits']:
                 self.assertNotIn('start', edit)
                 self.assertIn('token_hash', edit)
@@ -43,7 +43,7 @@ class DialogueRecipes(unittest.TestCase):
                 self.assertNotIn('original', edit)
                 self.assertIn('source_hash', edit)
         for name in ('double-prices', 'prices-french', 'prices-spanish'):
-            spec = json.loads((ROOT/'resources/mm3d/text'/f'{name}.json').read_text())
+            spec = json.loads((ROOT/'resources/mm3d/text'/f'{name}.json').read_text(encoding='utf-8'))
             for group in ('rewrites', 'shorten'):
                 for rules in spec.get(group, {}).values():
                     self.assertIsInstance(rules, list)
@@ -65,7 +65,7 @@ class DialogueRecipes(unittest.TestCase):
     def test_original_entries_have_no_embedded_fallback(self):
         count = 0
         for name in TABLES:
-            data = (ROOT/'src/mm3d'/name).read_text()
+            data = (ROOT/'src/mm3d'/name).read_text(encoding='utf-8')
             self.assertNotIn('std::string_view', data)
             matches = list(PATTERN.finditer(data))
             self.assertTrue(matches, name)

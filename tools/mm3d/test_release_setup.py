@@ -28,13 +28,13 @@ class SetupTests(unittest.TestCase):
             replay(args, root / 'stage')
             self.assertEqual((root / 'stage/load/mods/0004000000125500/test.gar').read_bytes(), b'abXXefLONG')
             self.assertEqual(source.read_bytes(), b'abcdef')
-            self.assertNotIn('/private/local', (args.recipe / 'defaults/notebook.json').read_text())
+            self.assertNotIn('/private/local', (args.recipe / 'defaults/notebook.json').read_text(encoding='utf-8'))
             source.write_bytes(b'wrong!')
             with self.assertRaisesRegex(ValueError, 'Unsupported input'):
                 replay(args, root / 'stage')
             source.write_bytes(b'abcdef')
             recipe = args.recipe / 'recipe.json'
-            obj = json.loads(recipe.read_text())
+            obj = json.loads(recipe.read_text(encoding='utf-8'))
             obj['files'][0]['output_sha256'] = 'bad'
             recipe.write_text(json.dumps(obj))
             with self.assertRaisesRegex(ValueError, 'Output mismatch'):

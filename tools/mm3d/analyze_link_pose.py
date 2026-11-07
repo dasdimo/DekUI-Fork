@@ -107,7 +107,7 @@ if __name__ == '__main__':
     parser.add_argument('--pose-frame-offset', type=int, default=0)
     parser.add_argument('--model', type=Path, help='Local uncompressed human Link GAR/CMB')
     args = parser.parse_args()
-    report = analyze(json.loads(args.capture.read_text()), args.pose_frame_offset,
+    report = analyze(json.loads(args.capture.read_text(encoding='utf-8')), args.pose_frame_offset,
                      bind_corrections(args.model) if args.model else None)
     text = json.dumps(report, indent=2)
     if args.output:

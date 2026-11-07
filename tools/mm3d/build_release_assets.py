@@ -81,7 +81,7 @@ def message_profile(original, manifest):
 def build(original, restoration, output, messages=None):
     # messages overrides the extracted-tree profile (for example the Russian
     # overlay for the Europe title); otherwise the tree identifies the title.
-    manifest = json.loads((RESOURCES / 'setup-fingerprints.json').read_text())
+    manifest = json.loads((RESOURCES / 'setup-fingerprints.json').read_text(encoding='utf-8'))
     roots = {'original': original, 'restoration': restoration}
     if output.exists():
         raise ValueError('Output exists; refusing to overwrite')

@@ -4,8 +4,8 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[3]
 class RecipeTest(unittest.TestCase):
  def test_manifest_contract(self):
-  recipe=json.loads((ROOT/'resources/mm3d/android-layout-recipe.json').read_text())
-  manifest=json.loads((ROOT/'resources/mm3d/setup-fingerprints.json').read_text())
+  recipe=json.loads((ROOT/'resources/mm3d/android-layout-recipe.json').read_text(encoding='utf-8'))
+  manifest=json.loads((ROOT/'resources/mm3d/setup-fingerprints.json').read_text(encoding='utf-8'))
   self.assertEqual(len(recipe['files']),len(manifest['files']))
   for rule,entry in zip(recipe['files'],manifest['files']):
    self.assertEqual((rule['output'],rule['size'],rule['sha256']),(entry['output'],entry['size'],entry['output_sha256']))

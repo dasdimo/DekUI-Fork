@@ -19,7 +19,7 @@ EUR_FACTS = {'program_id': '0004000000125600', 'remaster_version': 2,
 
 class GameFolderTests(unittest.TestCase):
     def test_supported_rom_manifest_is_dual_profile_v2(self):
-        data = json.loads((RESOURCES/'supported-rom.json').read_text())
+        data = json.loads((RESOURCES/'supported-rom.json').read_text(encoding='utf-8'))
         self.assertEqual(data['schema'], 2)
         self.assertEqual({e['title_id'] for e in data['roms']}, {'0004000000125500', '0004000000125600'})
         self.assertEqual({e['region'] for e in data['roms']}, {'usa', 'eur'})
@@ -32,7 +32,7 @@ class GameFolderTests(unittest.TestCase):
         self.assertEqual(facts[EUR_FACTS['program_id']],
                          (EUR_FACTS['main_partition_bytes'], EUR_FACTS['main_partition_sha256']))
         # The fingerprints manifest keys message profiles by the same title ids.
-        titles = json.loads((RESOURCES/'setup-fingerprints.json').read_text())['titles']
+        titles = json.loads((RESOURCES/'setup-fingerprints.json').read_text(encoding='utf-8'))['titles']
         self.assertEqual(set(titles), {e['title_id'] for e in data['roms']})
         for title, profile in titles.items():
             self.assertEqual(profile['messages']['names'], list(profile['messages']['hashes']))
@@ -66,8 +66,8 @@ class GameFolderTests(unittest.TestCase):
             with patch('setup_game_folder.validate', return_value={'title_id':'0004000000125500','main_partition_sha256':'0'*64}), patch('setup_game_folder.extract',
                     side_effect=lambda rom,out:out.mkdir(parents=True)), patch('setup_game_folder.build'):
                 setup(root,root,rom)
-            self.assertEqual(json.loads((root/'user/setup/ready.json').read_text())['title_id'], '0004000000125500')
-            self.assertEqual(json.loads((root/'user/setup/ready.json').read_text())['rom_sha256'], '0'*64)
+            self.assertEqual(json.loads((root/'user/setup/ready.json').read_text(encoding='utf-8'))['title_id'], '0004000000125500')
+            self.assertEqual(json.loads((root/'user/setup/ready.json').read_text(encoding='utf-8'))['rom_sha256'], '0'*64)
             textures=root/'user/load/textures/0004000000125500'
             self.assertTrue(textures.is_dir())
             self.assertEqual(list(textures.iterdir()),[])
@@ -90,10 +90,10 @@ class GameFolderTests(unittest.TestCase):
             with patch('setup_game_folder.validate', return_value={'title_id':'0004000000125600','main_partition_sha256':'0'*64}), patch('setup_game_folder.extract',
                     side_effect=lambda rom,out:out.mkdir(parents=True)), patch('setup_game_folder.build', side_effect=fake_build):
                 setup(root,root,rom)
-            profile=json.loads((RESOURCES/'setup-fingerprints.json').read_text())['titles']['0004000000125600']['rus']
+            profile=json.loads((RESOURCES/'setup-fingerprints.json').read_text(encoding='utf-8'))['titles']['0004000000125600']['rus']
             self.assertEqual(calls,[profile['messages']])
             user=root/'user';mod=user/'load/mods/0004000000125600'
-            vendored=json.loads((RESOURCES/'rus/manifest.json').read_text())
+            vendored=json.loads((RESOURCES/'rus/manifest.json').read_text(encoding='utf-8'))
             eue=[e for e in vendored['files'] if e['path']=='message/eu/eue.gmsg'][0]
             # The expansion base under setup/original is the vendored RU archive.
             base=user/'setup/original/romfs/message/eu/eue.gmsg'
@@ -117,10 +117,10 @@ class GameFolderTests(unittest.TestCase):
     def test_russian_message_profile_matches_vendored_overlay(self):
         import classic_localized_text
         from single_screen_text import fnv
-        titles=json.loads((RESOURCES/'setup-fingerprints.json').read_text())['titles']
+        titles=json.loads((RESOURCES/'setup-fingerprints.json').read_text(encoding='utf-8'))['titles']
         profile=titles['0004000000125600']['rus']
         self.assertEqual(profile['manifest'],'rus/manifest.json')
-        manifest=json.loads((RESOURCES/'rus'/'manifest.json').read_text())
+        manifest=json.loads((RESOURCES/'rus'/'manifest.json').read_text(encoding='utf-8'))
         entry=[e for e in manifest['files'] if e['path']=='message/eu/eue.gmsg'][0]
         data=(RESOURCES/'rus'/'message/eu/eue.gmsg').read_bytes()
         self.assertEqual(hashlib.sha256(data).hexdigest(),entry['sha256'])

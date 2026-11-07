@@ -21,7 +21,7 @@ class WindowsPythonTests(unittest.TestCase):
             digest = fixture_archive(archive)
             with patch.object(runtime, 'ARM64_SHA256', digest):
                 runtime.install(archive, root / 'runtime', 'arm64')
-                notice = (root / 'runtime/DEKUI-NOTICE.txt').read_text()
+                notice = (root / 'runtime/DEKUI-NOTICE.txt').read_text(encoding='utf-8')
                 self.assertIn('Windows arm64', notice)
                 self.assertIn('embed-arm64.zip', notice)
             with patch.object(runtime, 'SHA256', digest):
@@ -38,11 +38,11 @@ class WindowsPythonTests(unittest.TestCase):
                 runtime.install(archive, root / 'runtime/python')
                 with self.assertRaisesRegex(ValueError, 'existing Python'):
                     runtime.install(archive, root / 'runtime/python')
-            self.assertEqual((root / 'runtime/python' / runtime.PTH).read_text(),
+            self.assertEqual((root / 'runtime/python' / runtime.PTH).read_text(encoding='utf-8'),
                              'python313.zip\n.\n../../tools/mm3d\n')
-            self.assertEqual((root / 'runtime/python/LICENSE.txt').read_text(),
+            self.assertEqual((root / 'runtime/python/LICENSE.txt').read_text(encoding='utf-8'),
                              'official fixture LICENSE.txt')
-            self.assertIn(digest, (root / 'runtime/python/DEKUI-NOTICE.txt').read_text())
+            self.assertIn(digest, (root / 'runtime/python/DEKUI-NOTICE.txt').read_text(encoding='utf-8'))
 
     def test_bad_hash_and_incomplete_archive_fail_before_extraction(self):
         with tempfile.TemporaryDirectory() as tmp:

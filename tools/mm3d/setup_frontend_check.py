@@ -22,7 +22,7 @@ class SetupFrontendTests(unittest.TestCase):
         rom = root/'game.3ds'
         rom.write_bytes(b'fixture')
         profile = next(e for e in json.loads(
-            (setup_game_folder.RESOURCES/'supported-rom.json').read_text())['roms'] if e['region'] == 'usa')
+            (setup_game_folder.RESOURCES/'supported-rom.json').read_text(encoding='utf-8'))['roms'] if e['region'] == 'usa')
         with patch.object(setup_game_folder, 'validate', return_value=profile), \
              patch.object(setup_game_folder, 'extract',
                           side_effect=lambda rom, out: out.mkdir(parents=True)), \

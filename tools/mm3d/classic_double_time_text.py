@@ -45,7 +45,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     output = generate(args.source.read_bytes())
     if args.check:
-        assert args.output.read_text() == output, 'Generated text header is stale'
+        assert args.output.read_text(encoding='utf-8') == output, 'Generated text header is stale'
     else:
         args.output.write_text(output)
     print('Five red destinations, native Yes/No controls, capacity, and Final Night wording verified.')

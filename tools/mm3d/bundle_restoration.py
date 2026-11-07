@@ -9,8 +9,8 @@ FILES = ('code.bps', 'exheader.bin', 'LICENSE.md', 'NOTICE.txt', 'SOURCE.tar.gz'
 
 def copy_restoration(repo, destination):
     source = repo / 'resources/mm3d/project-restoration'
-    manifest = json.loads((source / 'manifest.json').read_text())
-    fingerprints = json.loads((repo / 'resources/mm3d/setup-fingerprints.json').read_text())
+    manifest = json.loads((source / 'manifest.json').read_text(encoding='utf-8'))
+    fingerprints = json.loads((repo / 'resources/mm3d/setup-fingerprints.json').read_text(encoding='utf-8'))
     for name in FILES:
         path = source / name
         if not path.is_file() or path.is_symlink():

@@ -18,7 +18,7 @@ def install_stage(root, stage):
         and not stage.is_symlink(),
         "Invalid PAK import stage",
     )
-    report = json.loads((stage / "import.json").read_text())
+    report = json.loads((stage / "import.json").read_text(encoding='utf-8'))
     require(
         report.get("schema") == 1
         and report.get("kind") == "pak-import"

@@ -23,7 +23,7 @@ class LayoutMigrationTests(unittest.TestCase):
             self.assertEqual(new[k],old[k] if k in self.policy['preserve_existing'] else v,k)
 
     def test_reported_deck_case_preserves_all_nonlayout_preferences(self):
-        old=json.loads((Path(__file__).parent/'fixtures/beta2-upgraded-deck.json').read_text())
+        old=json.loads((Path(__file__).parent/'fixtures/beta2-upgraded-deck.json').read_text(encoding='utf-8'))
         new,held=self.apply(old);self.assertEqual(held,[])
         prefixes=tuple(p for group in migration.GROUPS.values() for p in group)
         for k,v in old.items():
@@ -40,7 +40,7 @@ class LayoutMigrationTests(unittest.TestCase):
         self.assertEqual(new['file_select_0_y'],self.policy['current']['file_select_0_y'])
 
     def test_previous_fork_release_retains_hud_and_preferences(self):
-        old = json.loads((Path(__file__).parent/'fixtures/fork-layout-v1.json').read_text())
+        old = json.loads((Path(__file__).parent/'fixtures/fork-layout-v1.json').read_text(encoding='utf-8'))
         old.update(camera_distance=1.66, adult_link_model=True, dark_link_model=False)
         new, _ = self.apply(old)
         for key, value in old.items():

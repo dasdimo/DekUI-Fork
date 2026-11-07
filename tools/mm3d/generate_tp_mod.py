@@ -37,7 +37,7 @@ def main():
     stage = generate(args.root / 'user', args.mm_rom, args.tp_rom,
                      runtime / 'tp' / library,
                      lambda message: print(json.dumps({'progress': message}), flush=True))
-    report = json.loads((Path(stage) / 'generated.json').read_text())
+    report = json.loads((Path(stage) / 'generated.json').read_text(encoding='utf-8'))
     print(json.dumps({'stage': stage, 'variants': report['variants'],
                       'clips': report['voices']['clips']}), flush=True)
 

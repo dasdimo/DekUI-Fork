@@ -28,7 +28,7 @@ class DesktopHudTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             user,res,spec,source,target=self.fixture(Path(tmp));apply(user,res)
             self.assertEqual((user/ARCHIVE).read_bytes(),target)
-            self.assertEqual(json.loads((user/CONFIG).read_text()),{'hud_diamond_enabled':True,'walk_speed':2})
+            self.assertEqual(json.loads((user/CONFIG).read_text(encoding='utf-8')),{'hud_diamond_enabled':True,'walk_speed':2})
             self.assertEqual((user/'save/sentinel').read_bytes(),b'save')
             backup=user/'config/dekui-backups';self.assertEqual(next(backup.glob('*.gar')).read_bytes(),source)
             count=len(list(backup.iterdir()));apply(user,res);self.assertEqual(len(list(backup.iterdir())),count)
@@ -69,7 +69,7 @@ class DesktopHudTests(unittest.TestCase):
     def test_custom_positions_are_retained(self):
         with tempfile.TemporaryDirectory() as tmp:
             user,res,spec,source,target=self.fixture(Path(tmp));(user/CONFIG).write_text('{"hud_diamond_enabled":"custom"}')
-            apply(user,res);self.assertEqual(json.loads((user/CONFIG).read_text()),{'hud_diamond_enabled':'custom'})
+            apply(user,res);self.assertEqual(json.loads((user/CONFIG).read_text(encoding='utf-8')),{'hud_diamond_enabled':'custom'})
 
     def test_pc_input_patch_is_checked_backed_up_and_idempotent(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -105,7 +105,7 @@ class DesktopHudTests(unittest.TestCase):
         assets=root/'src/android/app/src/main/assets'
         for name in ('layout.json','play.json'):
             self.assertEqual((resources/'desktop-hud'/name).read_bytes(),(assets/'dekui-hud8x'/name).read_bytes())
-        values=json.loads((resources/'desktop-hud/layout.json').read_text())['presentation']
+        values=json.loads((resources/'desktop-hud/layout.json').read_text(encoding='utf-8'))['presentation']
         for file in (resources/'defaults/presentation.json',assets/'dekui/presentation.json'):
-            actual=json.loads(file.read_text())
+            actual=json.loads(file.read_text(encoding='utf-8'))
             self.assertEqual({k:actual[k] for k in values},values)

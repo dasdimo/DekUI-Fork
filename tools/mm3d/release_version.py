@@ -6,7 +6,7 @@ import re
 
 def version():
     value = (Path(__file__).resolve().parents[2] /
-             'resources/mm3d/release-version.txt').read_text().strip()
+             'resources/mm3d/release-version.txt').read_text(encoding='utf-8').strip()
     if not re.fullmatch(r'(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-(?:beta|rc)\.[1-9][0-9]*)?', value):
         raise ValueError(f'Invalid release version: {value!r}')
     return value

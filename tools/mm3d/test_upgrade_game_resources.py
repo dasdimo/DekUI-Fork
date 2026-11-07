@@ -23,7 +23,7 @@ class ResourceUpgradeTests(unittest.TestCase):
         self.user = self.root/'user'
         self.rom = self.root/'game.3ds'
         self.rom.write_bytes(b'game')
-        roms = json.loads((setup_game_folder.RESOURCES/'supported-rom.json').read_text())['roms']
+        roms = json.loads((setup_game_folder.RESOURCES/'supported-rom.json').read_text(encoding='utf-8'))['roms']
         self.rom_hash = next(e['main_partition_sha256'] for e in roms if e['region'] == 'usa')
         self.eur_hash = next(e['main_partition_sha256'] for e in roms if e['region'] == 'eur')
         self.put(upgrade.READY, json.dumps({'version': 1, 'rom_sha256': self.rom_hash, 'extra': 'keep'}).encode())
@@ -33,7 +33,7 @@ class ResourceUpgradeTests(unittest.TestCase):
             'sdmc/Nintendo 3DS/profile/title/save.bin': b'precious save',
             'nand/system.dat': b'nand', 'states/test.cst': b'state',
             'config/qt-config.ini': b'[Renderer]\nresolution_factor=7\n',
-            'config/mm3d-local/presentation.json': json.dumps(dict(json.loads((setup_game_folder.RESOURCES/'defaults/presentation.json').read_text()), song_list_x=72.5)).encode(),
+            'config/mm3d-local/presentation.json': json.dumps(dict(json.loads((setup_game_folder.RESOURCES/'defaults/presentation.json').read_text(encoding='utf-8')), song_list_x=72.5)).encode(),
             'load/textures/'+USA+'/custom.png': b'texture',
             'load/mods/'+USA+'/romfs/layout/Joker.Main.New.gar': b'custom layout',
             'classic-save-test.bin': b'cycle/owl data',
