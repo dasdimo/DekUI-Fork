@@ -68,6 +68,16 @@ def transform(name, source, original_play):
     return source  # Required clean baselines and unchanged Restoration inputs.
 
 
+def message_profile(original, manifest):
+    # The extraction directory identifies which supported title profile a build
+    # serves; exactly one supported message tree may exist under the originals.
+    found = [m['messages'] for m in manifest['titles'].values()
+             if (original / m['messages']['source_dir']).is_dir()]
+    if len(found) != 1:
+        raise ValueError('Expected exactly one supported message extraction under the original tree')
+    return found[0]
+
+
 def build(original, restoration, output):
     manifest = json.loads((RESOURCES / 'setup-fingerprints.json').read_text())
     roots = {'original': original, 'restoration': restoration}
@@ -93,13 +103,17 @@ def build(original, restoration, output):
             write(stage, entry['output'], data)
         # Expand native message storage from the user's verified game. Runtime
         # hooks select classic wording only when the corresponding option is on.
-        # eur messages: pending text profile; this reads the USA extraction only
-        # and raises for an Europe extraction until the profile block is wired.
-        message_source = original / 'romfs/message/us'
-        english, _, _ = prepare_owl((message_source / 'use.gmsg').read_bytes())
-        localized, _ = prepare_localized(message_source)
-        for name, data in {'use.gmsg': english, **localized}.items():
-            write(stage, 'romfs/message/us/' + name, data)
+        # The title profile names the archives and their GMSG language codes.
+        messages = message_profile(original, manifest)
+        source_dir = original / messages['source_dir']
+        english, _, _ = prepare_owl((source_dir / (messages['text']['english']['name'] + '.gmsg')).read_bytes(),
+                                    messages['text']['english']['language'])
+        localized, _ = prepare_localized(source_dir, messages['text']['localized'])
+        generated = {messages['text']['english']['name'] + '.gmsg': english, **localized}
+        if set(generated) != {name + '.gmsg' for name in messages['names']}:
+            raise ValueError('Text profile does not cover every extracted message archive')
+        for name, data in generated.items():
+            write(stage, messages['source_dir'] + '/' + name, data)
         stage.rename(output)
     finally:
         if stage.exists():

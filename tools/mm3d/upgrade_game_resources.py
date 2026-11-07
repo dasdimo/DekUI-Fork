@@ -12,11 +12,23 @@ import layout_migration
 # Recovery-only path: old interrupted journals may contain this retired asset.
 LEGACY_SKY = 'setup/file_select_sky.rgba'
 RESOURCE_VERSION = 2
-TITLE = '0004000000125500'
-MESSAGE_NAMES = ('use.gmsg', 'usf.gmsg', 'uss.gmsg')
-# Outputs verified against the compiled English/French/Spanish dialogue storage.
-MESSAGE_HASHES = {'use.gmsg': '70bd72f961a6ff168604249b4c76f893f1cad6fbd9da0290e85f49cd319a1314', 'usf.gmsg': 'b848188634a5bf6c9f2cd837102420dbe0a3275d7fd17bbe0057e8dcbd173a77', 'uss.gmsg': '3310a03cf6d67a4ce7c054d7fff2b31fd309fcf966e91610f83ffdd92281a688'}
-MESSAGE_PATHS = tuple('load/mods/'+TITLE+'/romfs/message/us/'+n for n in MESSAGE_NAMES)
+# Message targets per supported title come from the shipped resource profiles;
+# an upgrade installs exactly the dialogue archives its own ROM extraction owns.
+def _title_message_targets():
+    manifest = json.loads((Path(__file__).resolve().parents[2] /
+                           'resources/mm3d/setup-fingerprints.json').read_text())
+    targets = {}
+    for title, profile in manifest['titles'].items():
+        messages = profile['messages']
+        names = tuple(name + '.gmsg' for name in messages['names'])
+        targets[title] = {
+            'source_dir': messages['source_dir'],
+            'names': names,
+            'hashes': {name + '.gmsg': value for name, value in messages['hashes'].items()},
+            'paths': tuple('load/mods/%s/%s/%s' % (title, messages['source_dir'], name) for name in names),
+        }
+    return targets
+TITLE_MESSAGES = _title_message_targets()
 # Retain this journal path only to recover transactions staged by earlier builds.
 NOTEBOOK = 'config/mm3d-local/notebook.json'
 READY = 'setup/ready.json'
@@ -27,7 +39,8 @@ RETIRED = frozenset('config/mm3d-local/'+p for p in (
     'notebook/notebook_events_context.json','notebook/notebook_open_signal.json',
     'title-screen/copyright.json','title-screen/press_start.json','title-screen/title_logo.json',
     'title-screen/title_logo_1.json','title-screen/version.json'))
-ALLOWED = frozenset((*MESSAGE_PATHS, NOTEBOOK, READY, layout_migration.CONFIG, layout_migration.BASELINE, LEGACY_SKY, *RETIRED))
+ALLOWED = frozenset((*[p for t in TITLE_MESSAGES.values() for p in t['paths']],
+                     NOTEBOOK, READY, layout_migration.CONFIG, layout_migration.BASELINE, LEGACY_SKY, *RETIRED))
 
 
 def digest(data):
@@ -194,7 +207,10 @@ def upgrade(root, rom, restoration):
             v = ready.get(key, 0)
             if type(v) is not int or not 0 <= v <= maximum:
                 raise ValueError('Unsupported '+key+'; refusing to downgrade user data')
-        validate(rom)
+        rom_profile = validate(rom)
+        messages = TITLE_MESSAGES.get(rom_profile['title_id'])
+        if messages is None:
+            raise ValueError('Selected supported ROM has no dialogue targets')
         resume(user)
         ready = json.loads(checked(user, READY).read_bytes())
         changes = {}
@@ -214,27 +230,26 @@ def upgrade(root, rom, restoration):
                 if target.is_file() and digest(target.read_bytes().replace(b'\r\n', b'\n')) == sha:
                     changes[relative] = None  # Exact disabled stock profiles only; backed up first.
             ready['layout_version'] = layout_migration.VERSION
-        # eur messages: pending text profile. This path regenerates only the USA
-        # dialogue resources; an Europe-based setup raises when the extraction
-        # below has no message/us inputs. A follow-up selects the profile block.
-        missing = any(not checked(user, p).is_file() for p in MESSAGE_PATHS)
+        # Regenerate only the dialogue resources owned by this ROM's title; an
+        # Europe-based setup installs its Europe archives under its own title id.
+        missing = any(not checked(user, p).is_file() for p in messages['paths'])
         if ready.get('resource_version', 1) < RESOURCE_VERSION or missing:
             with tempfile.TemporaryDirectory(prefix='.resource-build-', dir=user/'setup') as tmp:
                 stage = Path(tmp)
                 extract(rom, stage/'original')
                 build(stage/'original', restoration, stage/'mods')
-                for name, relative in zip(MESSAGE_NAMES, MESSAGE_PATHS):
-                    new = (stage/'mods/romfs/message/us'/name).read_bytes()
-                    if digest(new) != MESSAGE_HASHES[name]:
+                for name, relative in zip(messages['names'], messages['paths']):
+                    new = (stage/'mods'/messages['source_dir']/name).read_bytes()
+                    if digest(new) != messages['hashes'][name]:
                         raise ValueError('Generated dialogue checksum mismatch: '+name)
-                    original = (stage/'original/romfs/message/us'/name).read_bytes()
+                    original = (stage/'original'/messages['source_dir']/name).read_bytes()
                     target = checked(user, relative)
                     if target.exists() and target.read_bytes() not in (original, new):
                         raise ValueError('Custom dialogue resource conflicts with this update: '+str(target)+'. Back it up and move that file out of the mods folder, then retry. Saves and settings were not replaced.')
                     changes[relative] = new
         else:
-            for name, relative in zip(MESSAGE_NAMES, MESSAGE_PATHS):
-                if digest(checked(user, relative).read_bytes()) != MESSAGE_HASHES[name]:
+            for name, relative in zip(messages['names'], messages['paths']):
+                if digest(checked(user, relative).read_bytes()) != messages['hashes'][name]:
                     raise ValueError('Installed dialogue is modified or damaged: '+relative+'. Back up and move that file out of the mods folder, then retry. It was not overwritten.')
         if changes:
             ready['resource_version'] = RESOURCE_VERSION

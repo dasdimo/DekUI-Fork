@@ -9,6 +9,11 @@ import upgrade_game_resources as upgrade
 import setup_game_folder
 import build_release_assets
 
+# Real supported title ids; the shipped resource profiles define the dialogue
+# targets each title installs, and the fixtures exercise them per title.
+USA = '0004000000125500'
+EUR = '0004000000125600'
+
 
 class ResourceUpgradeTests(unittest.TestCase):
     def setUp(self):
@@ -29,13 +34,22 @@ class ResourceUpgradeTests(unittest.TestCase):
             'nand/system.dat': b'nand', 'states/test.cst': b'state',
             'config/qt-config.ini': b'[Renderer]\nresolution_factor=7\n',
             'config/mm3d-local/presentation.json': json.dumps(dict(json.loads((setup_game_folder.RESOURCES/'defaults/presentation.json').read_text()), song_list_x=72.5)).encode(),
-            'load/textures/'+upgrade.TITLE+'/custom.png': b'texture',
-            'load/mods/'+upgrade.TITLE+'/romfs/layout/Joker.Main.New.gar': b'custom layout',
+            'load/textures/'+USA+'/custom.png': b'texture',
+            'load/mods/'+USA+'/romfs/layout/Joker.Main.New.gar': b'custom layout',
             'classic-save-test.bin': b'cycle/owl data',
         }
         for path, data in self.keep.items(): self.put(path, data)
-        self.old = {name: b'original '+name.encode() for name in upgrade.MESSAGE_NAMES}
-        self.new = {name: b'expanded '+name.encode() for name in upgrade.MESSAGE_NAMES}
+        self.use_title(USA)
+
+    def use_title(self, title):
+        # Active title for this test run: names, install paths and the synthetic
+        # original/expanded payloads all come from its shipped profile.
+        self.title = title
+        self.targets = upgrade.TITLE_MESSAGES[title]
+        self.names = tuple(self.targets['names'])
+        self.paths = tuple(self.targets['paths'])
+        self.old = {name: b'original ' + name.encode() for name in self.names}
+        self.new = {name: b'expanded ' + name.encode() for name in self.names}
 
     def put(self, relative, data):
         p = self.user/relative
@@ -54,25 +68,28 @@ class ResourceUpgradeTests(unittest.TestCase):
 
     @contextlib.contextmanager
     def builders(self):
+        source = self.targets['source_dir']
         def extract(rom, output):
             for name, data in self.old.items():
-                p = output/'romfs/message/us'/name
+                p = output/source/name
                 p.parent.mkdir(parents=True, exist_ok=True); p.write_bytes(data)
         def build(original, restoration, output):
             for name, data in self.new.items():
-                p = output/'romfs/message/us'/name
+                p = output/source/name
                 p.parent.mkdir(parents=True, exist_ok=True); p.write_bytes(data)
-        with patch.object(upgrade, 'MESSAGE_HASHES', {n: upgrade.digest(d) for n,d in self.new.items()}), \
+        with patch.dict(upgrade.TITLE_MESSAGES[self.title],
+                       {'hashes': {n: upgrade.digest(d) for n,d in self.new.items()}}), \
              patch.object(setup_game_folder, 'validate') as validate, \
              patch.object(setup_game_folder, 'extract', side_effect=extract) as extract_mock, \
              patch.object(build_release_assets, 'build', side_effect=build):
+            validate.return_value = {'title_id': self.title}
             yield validate, extract_mock
 
     def run_upgrade(self):
         upgrade.upgrade(self.root, self.rom, self.root/'restoration')
 
     def test_upgrade_preserves_user_data_and_is_idempotent(self):
-        existing = upgrade.MESSAGE_PATHS[0]
+        existing = self.paths[0]
         self.put(existing, self.old['use.gmsg'])
         with self.builders() as (_, extract):
             self.run_upgrade()
@@ -85,26 +102,33 @@ class ResourceUpgradeTests(unittest.TestCase):
         ready = json.loads((self.user/upgrade.READY).read_bytes())
         self.assertEqual(ready['resource_version'], 2)
         self.assertEqual(ready['extra'], 'keep')
-        for name, relative in zip(upgrade.MESSAGE_NAMES, upgrade.MESSAGE_PATHS):
+        for name, relative in zip(self.names, self.paths):
             self.assertEqual((self.user/relative).read_bytes(), self.new[name])
         backup, = (self.user/'setup').glob('resource-upgrade-backup-*')
         self.assertEqual((backup/'backup'/existing).read_bytes(), self.old['use.gmsg'])
         self.assertNotIn('resource_version', json.loads((backup/'backup'/upgrade.READY).read_bytes()))
 
-    def test_europe_base_passes_the_rom_identity_gate(self):
-        # The identity gate accepts every supported base. The message pipeline is
-        # still USA-only (pending text profile), so these fixtures stay USA-shaped.
+    def test_europe_base_runs_the_message_pipeline(self):
+        # An Europe-based deck upgrades its own Europe dialogue archives under its
+        # own title id; USA-shaped user files stay untouched.
+        self.use_title(EUR)
         ready = json.loads((self.user/upgrade.READY).read_bytes())
         ready['rom_sha256'] = self.eur_hash
-        ready['title_id'] = '0004000000125600'
+        ready['title_id'] = EUR
         self.put(upgrade.READY, json.dumps(ready).encode())
-        with self.builders():
+        with self.builders() as (_, extract):
             self.run_upgrade()
+            self.assertEqual(extract.call_count, 1)
+            before = self.snapshot()
             self.run_upgrade()
+            self.assertEqual(extract.call_count, 1)
+            self.assertEqual(before, self.snapshot())
         self.assert_kept()
+        for name, relative in zip(self.names, self.paths):
+            self.assertEqual((self.user/relative).read_bytes(), self.new[name])
         published = json.loads((self.user/upgrade.READY).read_bytes())
         self.assertEqual(published['rom_sha256'], self.eur_hash)
-        self.assertEqual(published['title_id'], '0004000000125600')
+        self.assertEqual(published['title_id'], EUR)
 
     def test_retired_sky_never_triggers_extraction(self):
         with self.builders() as (_, extract):
@@ -137,7 +161,7 @@ class ResourceUpgradeTests(unittest.TestCase):
         self.assert_kept()
 
     def test_custom_dialogue_conflict_is_untouched(self):
-        self.put(upgrade.MESSAGE_PATHS[1], b'custom translation')
+        self.put(self.paths[1], b'custom translation')
         before = self.snapshot()
         with self.builders(), self.assertRaisesRegex(ValueError, 'Custom dialogue'):
             self.run_upgrade()
@@ -158,13 +182,13 @@ class ResourceUpgradeTests(unittest.TestCase):
         # Interrupt before each of the three resource writes and the ready marker.
         for stop in range(4):
             with self.subTest(stop=stop):
-                for relative in upgrade.MESSAGE_PATHS:
+                for relative in self.paths:
                     (self.user/relative).unlink(missing_ok=True)
                 self.put(upgrade.READY, json.dumps({'version': 1, 'rom_sha256': self.rom_hash}).encode())
                 count = 0
                 def interrupted(path, data):
                     nonlocal count
-                    if path in [self.user/p for p in (*upgrade.MESSAGE_PATHS, upgrade.READY)]:
+                    if path in [self.user/p for p in (*self.paths, upgrade.READY)]:
                         count += 1
                         if count == stop+1: raise KeyboardInterrupt('simulated process stop')
                     real_write(path, data)
@@ -195,17 +219,17 @@ class ResourceUpgradeTests(unittest.TestCase):
     def test_corrupt_stage_and_user_changes_block_resume(self):
         with self.builders(), patch.object(upgrade, 'resume', side_effect=[None, OSError('stop')]), self.assertRaises(OSError):
             self.run_upgrade()
-        stage = self.user/upgrade.PENDING/'new'/upgrade.MESSAGE_PATHS[0]
+        stage = self.user/upgrade.PENDING/'new'/self.paths[0]
         original = stage.read_bytes(); stage.write_bytes(b'corrupt')
         with self.builders(), self.assertRaisesRegex(ValueError, 'checksum mismatch'): self.run_upgrade()
         stage.write_bytes(original)
-        self.put(upgrade.MESSAGE_PATHS[0], b'new custom edit')
+        self.put(self.paths[0], b'new custom edit')
         with self.builders(), self.assertRaisesRegex(ValueError, 'File changed'): self.run_upgrade()
         self.assert_kept()
 
     def test_symlink_targets_rejected(self):
         outside = self.root/'outside'; outside.mkdir()
-        target = self.user/'load/mods'/upgrade.TITLE/'romfs/message'
+        target = self.user/'load/mods'/USA/'romfs/message'
         try: target.symlink_to(outside, target_is_directory=True)
         except OSError: self.skipTest('Symlinks unavailable')
         with self.builders(), self.assertRaisesRegex(ValueError, 'symbolic link'): self.run_upgrade()
@@ -223,27 +247,28 @@ class ResourceUpgradeTests(unittest.TestCase):
     def test_missing_current_resource_is_repaired(self):
         with self.builders():
             self.run_upgrade()
-            (self.user/upgrade.MESSAGE_PATHS[1]).unlink()
+            (self.user/self.paths[1]).unlink()
             self.run_upgrade()
-        self.assertEqual((self.user/upgrade.MESSAGE_PATHS[1]).read_bytes(), self.new['usf.gmsg'])
+        self.assertEqual((self.user/self.paths[1]).read_bytes(), self.new['usf.gmsg'])
         self.assert_kept()
 
     def test_unknown_current_resource_is_not_overwritten(self):
         with self.builders():
             self.run_upgrade()
-            self.put(upgrade.MESSAGE_PATHS[0], b'custom edit')
+            self.put(self.paths[0], b'custom edit')
             with self.assertRaisesRegex(ValueError, 'modified or damaged'): self.run_upgrade()
-        self.assertEqual((self.user/upgrade.MESSAGE_PATHS[0]).read_bytes(), b'custom edit')
+        self.assertEqual((self.user/self.paths[0]).read_bytes(), b'custom edit')
         self.assert_kept()
 
     def test_generated_checksum_mismatch_is_not_installed(self):
-        with self.builders(), patch.object(upgrade, 'MESSAGE_HASHES', dict.fromkeys(upgrade.MESSAGE_NAMES, 'bad')), \
+        with self.builders(), patch.dict(upgrade.TITLE_MESSAGES[self.title],
+                                        {'hashes': dict.fromkeys(self.names, 'bad')}), \
              self.assertRaisesRegex(ValueError, 'Generated dialogue checksum'): self.run_upgrade()
         self.assertFalse((self.user/upgrade.PENDING).exists())
         self.assert_kept()
 
     def test_failed_backup_does_not_change_live_files(self):
-        self.put(upgrade.MESSAGE_PATHS[0], self.old['use.gmsg'])
+        self.put(self.paths[0], self.old['use.gmsg'])
         before = self.snapshot()
         real_write = upgrade.atomic_write
         def disk_full(path, data):

@@ -11,6 +11,10 @@
           "use": "70bd72f961a6ff168604249b4c76f893f1cad6fbd9da0290e85f49cd319a1314",
           "usf": "b848188634a5bf6c9f2cd837102420dbe0a3275d7fd17bbe0057e8dcbd173a77",
           "uss": "3310a03cf6d67a4ce7c054d7fff2b31fd309fcf966e91610f83ffdd92281a688"
+        },
+        "text": {
+          "english": {"name": "use", "language": 2},
+          "localized": ["usf", "uss"]
         }
       }
     },
@@ -21,6 +25,10 @@
         "names": ["eue"],
         "hashes": {
           "eue": "fbb1a16e57586f99a64bb82a66969982e2dd41f10e9bca7a3f2c0eda1050c1f3"
+        },
+        "text": {
+          "english": {"name": "eue", "language": 16},
+          "localized": []
         }
       }
     }

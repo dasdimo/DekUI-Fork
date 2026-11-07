@@ -71,10 +71,11 @@ def tokens(spec):
     out += [(1,), (0x3a,2), (0x2f,2), spec['choices'][0], (1,), spec['choices'][1], (0x3a,11), (0,)]
     return out
 
-def build(source):
+def build(source, names=None):
     rows = []
     assets = {}
-    for name, spec in SPEC.items():
+    for name in (list(SPEC) if names is None else names):
+        spec = SPEC[name]
         data = (source/(name+'.gmsg')).read_bytes()
         assert struct.unpack_from('<I', data, 12)[0] == spec['language']
         table = entries(data)

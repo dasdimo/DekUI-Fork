@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Prepare expanded owl-prompt storage for an isolated USA English test profile.
+"""Prepare expanded owl-prompt storage for the supported English profiles.
 No message IDs are borrowed. All other entries and payloads stay byte-identical.
 The native prompt remains the default; the emulator toggles the longer wording.
+The USA archive uses language code 2; the Europe archive uses language code 16.
 """
 import argparse
 import struct
@@ -27,8 +28,8 @@ def dialogue():
     tokens += [(1,), (0x3a, 2), (0x2f, 2), 'Yes', (1,), 'No', (0x3a, 11), (0,)]
     return tokens
 
-def prepare(data):
-    original = text.messages(data)
+def prepare(data, language=2):
+    original = text.messages(data, language)
     raw = original[PROMPT]
     if text.fnv(raw) != 0x0bc4fc20522543ef:
         raise ValueError('Unsupported owl prompt; archive left untouched')
@@ -48,7 +49,7 @@ def prepare(data):
         if struct.unpack_from('<H',data,at)[0] == PROMPT:
             struct.pack_into('<II',out,at+12,offset,CAPACITY)
             break
-    after = text.messages(out)
+    after = text.messages(out, language)
     assert all(after[i] == v for i,v in original.items() if i != PROMPT)
     row = (PROMPT,CAPACITY,text.fnv(padded),replacement,tokens,padded)
     header = text.header([row])
@@ -66,8 +67,9 @@ if __name__ == '__main__':
     p=argparse.ArgumentParser()
     p.add_argument('source',type=Path);p.add_argument('output',type=Path)
     p.add_argument('--header',type=Path,required=True)
-    a=p.parse_args()
-    out,h,n=prepare(a.source.read_bytes())
+    p.add_argument('--language',type=int,default=2,help='GMSG language code: 2 USA, 16 Europe')
+    a = p.parse_args()
+    out,h,n=prepare(a.source.read_bytes(),a.language)
     a.output.parent.mkdir(parents=True,exist_ok=True)
     a.output.write_bytes(out);a.header.write_text(h)
     print(f'Owl dialogue: {n}/{CAPACITY} bytes; every other message verified unchanged')
