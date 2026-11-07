@@ -9,6 +9,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QJsonDocument>
+#include <QJsonObject>
 #include <QList>
 #include <QString>
 
