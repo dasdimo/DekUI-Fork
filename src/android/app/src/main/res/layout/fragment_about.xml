@@ -74,6 +74,15 @@
                     android:textAlignment="viewStart"
                     android:text="@string/citra_description" />
 
+                <com.google.android.material.textview.MaterialTextView
+                    style="@style/TextAppearance.Material3.BodyMedium"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="24dp"
+                    android:layout_marginTop="6dp"
+                    android:textAlignment="viewStart"
+                    android:text="@string/fork_description" />
+
             </LinearLayout>
 
             <com.google.android.material.divider.MaterialDivider

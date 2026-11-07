@@ -31,6 +31,7 @@
     <string name="select_games_folder_description">Allows Azahar to populate the application list</string>
     <string name="about">About</string>
     <string name="citra_description">An open-source 3DS emulator</string>
+    <string name="fork_description">Majora ReMasked fork. Supports Europe (Rev 1) ROMs with the ZELDA64RUS Russian translation, and USA ROMs.</string>
     <string name="about_description">Build version, credits, and more</string>
     <string name="games_dir_selected">Application directory selected</string>
     <string name="select_citra_user_folder_home_description">Changes the files that Azahar uses to load applications</string>
