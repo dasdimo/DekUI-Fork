@@ -34,7 +34,7 @@ inline QString InstalledTitleId(const QString& load_dir,
         return {};
     if (installed.size() == 1)
         return installed.first();
-    const QFile ready(QDir(load_dir).absoluteFilePath(QStringLiteral("../setup/ready.json")));
+    QFile ready(QDir(load_dir).absoluteFilePath(QStringLiteral("../setup/ready.json")));
     if (ready.open(QIODevice::ReadOnly)) {
         const QString title = QJsonDocument::fromJson(ready.readAll()).object()
                                   .value(QStringLiteral("title_id")).toString().toLower();
