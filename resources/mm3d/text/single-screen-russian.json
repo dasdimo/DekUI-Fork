@@ -1,0 +1,131 @@
+{
+  "language": 16,
+  "edits": [
+    {
+      "id": "003e",
+      "text": "Нажмите SELECT, чтобы открыть\nинвентарь.\nВкладка «Карта» — {L}/{R}.",
+      "token_index": 9,
+      "token_hash": "2a9538ece078b32d",
+      "prefix_length": 0
+    },
+    {
+      "id": "003e",
+      "text": "Крестовина — перемещение курсора.\nВыберите этаж в списке этажей.\n{B} — назад.",
+      "token_index": 21,
+      "token_hash": "4e13ea6db54f4f38",
+      "prefix_length": 0
+    },
+    {
+      "id": "0043",
+      "text": "ZL — посмотреть сквозь неё.\n{A} — сделать снимок.",
+      "token_index": 9,
+      "token_hash": "4a8d4414b43d2f50",
+      "prefix_length": 0
+    },
+    {
+      "id": "0078",
+      "text": "Нажмите SELECT, чтобы открыть\nинвентарь.\nВкладка «Маски» — {L}/{R}.",
+      "token_index": 19,
+      "token_hash": "2a9538ece078b32d",
+      "prefix_length": 0
+    },
+    {
+      "id": "0078",
+      "text": "Вниз на крестовине — надеть маску.\nНажмите ещё раз, чтобы снять.",
+      "token_index": 31,
+      "token_hash": "da521f073382be20",
+      "prefix_length": 0
+    },
+    {
+      "id": "00ff",
+      "text": "Выберите предмет и нажмите {A}.\n{B} — отмена.{Color:11}",
+      "token_index": 1,
+      "token_hash": "f627b837a8403524",
+      "prefix_length": 0
+    },
+    {
+      "id": "026b",
+      "text": "Нажмите SELECT, чтобы открыть\nинвентарь.\nВкладка «Предметы» — {L}/{R}.",
+      "token_index": 7,
+      "token_hash": "2a9538ece078b32d",
+      "prefix_length": 0
+    },
+    {
+      "id": "026b",
+      "text": "{Stick} — выбор предмета.\n{X} или {Y} — назначить.",
+      "token_index": 19,
+      "token_hash": "ca9b9dc8888199b2",
+      "prefix_length": 0
+    },
+    {
+      "id": "026b",
+      "text": "Для слотов I и II удерживайте ZR\nи нажмите {X} или {Y}.",
+      "token_index": 29,
+      "token_hash": "611e9298daf4ba81",
+      "prefix_length": 0
+    },
+    {
+      "id": "026b",
+      "text": "Та же кнопка или сочетание —\nиспользовать предмет.\nЭто просто!",
+      "token_index": 39,
+      "token_hash": "c964fca6ec794860",
+      "prefix_length": 0
+    },
+    {
+      "id": "0270",
+      "text": "Нажмите SELECT, чтобы открыть\nинвентарь. {L}/{R} — вкладка\n«Снаряжение»: что собрано.",
+      "token_index": 15,
+      "token_hash": "2a9538ece078b32d",
+      "prefix_length": 0
+    },
+    {
+      "id": "033f",
+      "text": "В {Color:1}Заметках о событиях{Color:11} выберите\nсобытие, чтобы прочитать.",
+      "token_index": 32,
+      "token_hash": "2be04a4bf4659251",
+      "prefix_length": 0
+    },
+    {
+      "id": "0e9b",
+      "text": "Прогресс сохранён.{Color:11}",
+      "token_index": 1,
+      "token_hash": "ae411505c5f07bdf",
+      "prefix_length": 0
+    },
+    {
+      "id": "1bae",
+      "text": "Несомые рупии{Color:11} и некоторые\nпредметы будут {Color:1}утрачены{Color:11}.",
+      "token_index": 0,
+      "token_hash": "80fe280d6619d78e",
+      "prefix_length": 0
+    },
+    {
+      "id": "1d18",
+      "text": "Миникарта{Color:11} — в правом нижнем\nуглу. ZR + SELECT включает\nи выключает её.",
+      "token_index": 9,
+      "token_hash": "244763390a8547bf",
+      "prefix_length": 0
+    },
+    {
+      "id": "1d18",
+      "text": "SELECT — инвентарь.\n{L}/{R}: вкладка «Карта».",
+      "token_index": 19,
+      "token_hash": "2a9538ece078b32d",
+      "prefix_length": 0
+    },
+    {
+      "id": "2056",
+      "text": "Чтобы вернуться к сохранению,\nвыйдите из игры и запустите\nеё заново, затем загрузитесь.",
+      "token_index": 0,
+      "token_hash": "8cf1165d2bf6c052",
+      "prefix_length": 0
+    },
+    {
+      "id": "575b",
+      "text": "Введите имя.",
+      "token_index": 0,
+      "token_hash": "3a2b5bb0fb27e0c6",
+      "prefix_length": 0
+    }
+  ]
+}

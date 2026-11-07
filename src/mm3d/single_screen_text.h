@@ -58,6 +58,7 @@ template<class M> bool Apply(M& m,U32 self,U32 id) {
             replacement=nullptr;
             if(language==4)for(const auto& r:FrenchReplacements)if(r.id==id){replacement=&r;break;}
             if(language==8)for(const auto& r:SpanishReplacements)if(r.id==id){replacement=&r;break;}
+            if(language==16)for(const auto& r:RussianReplacements)if(r.id==id){replacement=&r;break;}
             if(!replacement)return false;
         }
     }

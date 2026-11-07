@@ -10,7 +10,7 @@ import struct
 import tempfile
 from probe_rom import probe
 from build_release_assets import build, RESOURCES
-from release_setup import write
+from release_setup import digest, write
 from upgrade_game_resources import RESOURCE_VERSION
 import layout_migration
 
@@ -36,11 +36,9 @@ def validate(rom):
     return selected
 
 
-def extract(rom, output):
-    # NCSD -> main NCCH -> standard IVFC level 3. Only required layout and message files are emitted.
-    manifest = json.loads((RESOURCES / 'setup-fingerprints.json').read_text())
-    wanted = {e['input'][6:] for e in manifest['files'] if e['input_root'] == 'original'}
-    wanted.add('layout/Joker.Main.Play.gar')
+def romfs_entries(rom, wanted=None):
+    # NCSD -> main NCCH -> standard IVFC level 3. Yields (path, bytes) for the
+    # wanted romfs paths (all of them when wanted is None), in table order.
     with rom.open('rb') as stream:
         size = rom.stat().st_size
         def read(at, count):
@@ -50,12 +48,7 @@ def extract(rom, output):
             if len(data) != count: raise ValueError('Short ROM read')
             return data
         base = struct.unpack('<I', read(0x120,4))[0] * 512
-        title_id = '%016x' % struct.unpack('<Q', read(base+0x118,8))[0]
-        if title_id not in manifest['titles']:
-            raise ValueError('Unsupported ROM revision/content; expected the verified decrypted USA or Europe Rev 1 dump')
-        messages = manifest['titles'][title_id]['messages']
-        wanted.update(messages['source_dir'][6:]+'/'+name+'.gmsg' for name in messages['names'])
-        rb, rn = struct.unpack('<II',read(base+0x1b0,8))
+        rb, rn = struct.unpack('<II', read(base+0x1b0,8))
         start, length = base + rb*512 + 0x1000, rn*512-0x1000
         if length <= 0: raise ValueError('Invalid RomFS')
         def rr(at, count):
@@ -79,15 +72,56 @@ def extract(rom, output):
                 _, nxt, data_at, data_len, _, n = struct.unpack('<IIQQII',rr(ft+file,32))
                 if n > 1024: raise ValueError('Invalid file name')
                 filename = path+rr(ft+file+32,n).decode('utf-16le')
-                if filename in wanted:
+                if wanted is None or filename in wanted:
                     if filename in found or data_len > 16*1024*1024: raise ValueError('Invalid asset')
-                    write(output,'romfs/'+filename,rr(payload+data_at,data_len));found.add(filename)
+                    yield filename, rr(payload+data_at,data_len)
+                    found.add(filename)
                 file = nxt
             while child != 0xffffffff:
-                child = directory(child,path,depth+1)
+                child = (yield from directory(child,path,depth+1))
             return sibling
-        directory(0,'')
-        if found != wanted: raise ValueError('Required game layouts missing')
+        yield from directory(0,'')
+        if wanted is not None and found != wanted: raise ValueError('Required game layouts missing')
+
+
+def title_id(rom):
+    # Program id of the main NCCH, as the lowercase 16-hex-digit string used everywhere.
+    with rom.open('rb') as stream:
+        base = struct.unpack('<I', _read(stream, 0x120, 4))[0] * 512
+        return '%016x' % struct.unpack('<Q', _read(stream, base+0x118, 8))[0]
+
+
+def _read(stream, at, count):
+    stream.seek(at); data = stream.read(count)
+    if len(data) != count: raise ValueError('Short ROM read')
+    return data
+
+
+def extract(rom, output):
+    manifest = json.loads((RESOURCES / 'setup-fingerprints.json').read_text())
+    wanted = {e['input'][6:] for e in manifest['files'] if e['input_root'] == 'original'}
+    wanted.add('layout/Joker.Main.Play.gar')
+    tid = title_id(rom)
+    if tid not in manifest['titles']:
+        raise ValueError('Unsupported ROM revision/content; expected the verified decrypted USA or Europe Rev 1 dump')
+    messages = manifest['titles'][tid]['messages']
+    wanted.update(messages['source_dir'][6:]+'/'+name+'.gmsg' for name in messages['names'])
+    for filename, data in romfs_entries(rom, wanted):
+        write(output, 'romfs/'+filename, data)
+
+
+def rus_overlay(block):
+    # Vendored RU overlay under resources/mm3d/rus; every file is verified
+    # against the overlay manifest before it can reach the installed tree.
+    manifest_path = RESOURCES / block['manifest']
+    manifest = json.loads(manifest_path.read_text())
+    files = {}
+    for entry in manifest['files']:
+        data = (manifest_path.parent / entry['path']).read_bytes()
+        if len(data) != entry['size'] or digest(data) != entry['sha256']:
+            raise ValueError('Russian overlay content drifted from its manifest: ' + entry['path'])
+        files[entry['path']] = data
+    return files
 
 
 def setup(root, restoration, selected_rom=None, copy_game=True, reference_game=False):
@@ -107,8 +141,23 @@ def setup(root, restoration, selected_rom=None, copy_game=True, reference_game=F
     try:
         original = stage/'setup/original'
         extract(rom,original)
+        profile=json.loads((RESOURCES / 'setup-fingerprints.json').read_text())['titles'][title]
         mod_root=stage/('load/mods/'+title)
-        build(original,restoration,mod_root)
+        rus=rus_overlay(profile['rus']) if 'rus' in profile else None
+        if rus is not None:
+            # The Russian archives become the expansion base, so the generated
+            # eue.gmsg keeps the slot expansion but carries RU text.
+            base=profile['messages']['source_dir'][6:]+'/'
+            for path,data in rus.items():
+                if path.startswith(base):
+                    write(original,'romfs/'+path,data)
+        build(original,restoration,mod_root,profile.get('rus',{}).get('messages'))
+        if rus is not None:
+            # Remaining RU files ride along as a plain mod copy; generated
+            # output wins (eue.gmsg was built from these very bytes).
+            for path,data in rus.items():
+                if not (mod_root/'romfs'/path).exists():
+                    write(mod_root,'romfs/'+path,data)
         write(stage, layout_migration.BASELINE, layout_migration.baseline(layout_policy))
         (stage/('load/textures/'+title)).mkdir(parents=True)
         shutil.copytree(RESOURCES/'defaults',stage/'config/mm3d-local')

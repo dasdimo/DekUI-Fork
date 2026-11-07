@@ -11,6 +11,9 @@ p.add_argument('output',type=Path)
 a=p.parse_args()
 root=Path(__file__).resolve().parents[3]
 m=json.loads((root/'resources/mm3d/setup-fingerprints.json').read_text())
+mods_dirs=[p for p in (a.stage/'mods').iterdir() if p.is_dir()]
+assert len(mods_dirs)==1, 'Expected exactly one title profile in the stage'
+mods=mods_dirs[0]
 inputs={}
 for e in m['files']:
  key=e['input_root']+'/'+e['input']
@@ -23,7 +26,7 @@ assert hashlib.sha256(inputs['original/romfs/layout/Joker.Main.Play.gar']).hexdi
 result={'version':1,'inputs':{k:hashlib.sha256(v).hexdigest() for k,v in inputs.items()},'files':[]}
 for e in m['files']:
  key=e['input_root']+'/'+e['input']; base=inputs[key]
- output=(a.stage/'mods/0004000000125500'/e['output']).read_bytes()
+ output=(mods/e['output']).read_bytes()
  assert hashlib.sha256(output).hexdigest()==e['output_sha256']
  ops=[];at=0
  while at<len(output):

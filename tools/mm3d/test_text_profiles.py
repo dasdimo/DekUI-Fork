@@ -25,23 +25,36 @@ def gmsg(language, entries):
 
 
 class TextProfileTests(unittest.TestCase):
-    def test_profiles_cover_their_extracted_archives(self):
+    def message_profiles(self):
         for title, profile in FINGERPRINTS['titles'].items():
-            messages = profile['messages']
+            yield title, profile['region'], profile['messages']
+            for name, overlay in profile.items():
+                if isinstance(overlay, dict) and 'messages' in overlay:
+                    yield title + '/' + name, profile['region'], overlay['messages']
+
+    def test_profiles_cover_their_extracted_archives(self):
+        for title, region, messages in self.message_profiles():
             english = messages['text']['english']
+            if english is None:
+                # The Russian overlay translates the native slot itself, so
+                # every pinned archive carries its own localized row.
+                self.assertEqual(messages['text']['localized'], messages['names'], title)
+                continue
             self.assertEqual(english['name'], messages['names'][0], title)
-            self.assertEqual(english['language'], 16 if profile['region'] == 'eur' else 2, title)
+            self.assertEqual(english['language'], 16 if region == 'eur' else 2, title)
             self.assertEqual(set(messages['text']['localized']),
                              {n for n in messages['names'] if n != english['name']}, title)
 
     def test_localized_names_match_the_builder_specifications(self):
-        for title, profile in FINGERPRINTS['titles'].items():
-            messages = profile['messages']
+        for title, _, messages in self.message_profiles():
             for name in messages['text']['localized']:
                 self.assertIn(name, classic_localized_text.SPEC, title)
-            self.assertEqual(messages['text']['localized'],
-                             [n for n in messages['names']
-                              if n in classic_localized_text.SPEC], title)
+            english = messages['text']['english']
+            covered = {name for name in messages['names'] if name in classic_localized_text.SPEC}
+            if english is not None:
+                # The English expansion already covers its own archive.
+                covered.discard(english['name'])
+            self.assertEqual(set(messages['text']['localized']), covered, title)
 
     def test_owl_preparation_follows_the_profile_language(self):
         fixture = gmsg(16, [(0x0C01, STOCK_PROMPT), (0x10, b'\x00')])

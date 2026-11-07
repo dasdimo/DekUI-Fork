@@ -10,7 +10,6 @@ import org.citra.citra_emu.CitraApplication
 /** Read-only SAF mount, independent of the writable game/user directory. */
 object DekuiTextureStorage {
     private const val PREFIX = "/@textures/"
-    private const val TITLE = "0004000000125500"
     private val context get() = CitraApplication.appContext
     private val prefs get() = context.getSharedPreferences("dekui-textures", Context.MODE_PRIVATE)
     private var cached: DocumentsTree? = null
@@ -37,17 +36,19 @@ object DekuiTextureStorage {
     /** Accept the title directory, textures directory, or an Azahar user directory. */
     fun select(uri: Uri): String {
         val root = DocumentFile.fromTreeUri(context, uri) ?: error("Cannot open this folder")
-        val candidates = listOf(
-            root.takeIf { it.name.equals(TITLE, ignoreCase = true) },
-            root.findFile(TITLE),
-            root.findFile("textures")?.findFile(TITLE),
-            root.findFile("load")?.findFile("textures")?.findFile(TITLE)
-        )
+        val candidates = TitleIds.all.flatMap { title ->
+            listOf(
+                root.takeIf { it.name.equals(title, ignoreCase = true) },
+                root.findFile(title),
+                root.findFile("textures")?.findFile(title),
+                root.findFile("load")?.findFile("textures")?.findFile(title)
+            )
+        }
         val folder = candidates.firstOrNull { it?.isDirectory == true }
             ?: root.takeIf { dir -> FileUtil.listFiles(dir.uri).any {
                 it.filename.startsWith("tex1_") || it.filename == "pack.json"
             } }
-            ?: error("No MM3D texture pack found. Choose ROMs/n3DS, load/textures, or the $TITLE folder.")
+            ?: error("No MM3D texture pack found. Choose ROMs/n3DS, load/textures, or the title folder (${TitleIds.all.joinToString(", ")}).")
         check(folder.canRead()) { "Android cannot read the selected texture folder" }
         context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
         val label = android.provider.DocumentsContract.getDocumentId(folder.uri).substringAfter(':')

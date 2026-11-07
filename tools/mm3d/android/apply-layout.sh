@@ -30,8 +30,14 @@ PY
 "$adb_bin" install -r -t "$apk"
 "$adb_bin" shell am force-stop "$package"
 backup="$remote/dekui-layout-backup-$(date +%Y%m%d-%H%M%S)"
-"$adb_bin" shell "mkdir -p '$backup' '$remote/load/mods' '$remote/config/mm3d-original/romfs' && if [ -d '$remote/load/mods/0004000000125500' ]; then cp -R '$remote/load/mods/0004000000125500' '$backup/'; fi"
-"$adb_bin" push "$stage/mods/0004000000125500" "$remote/load/mods/"
+mods_dirs=("$stage"/mods/*)
+if [ "${#mods_dirs[@]}" -ne 1 ] || [ ! -d "${mods_dirs[0]}" ]; then
+    echo "Expected exactly one game directory in $stage/mods" >&2
+    exit 1
+fi
+mods_title="${mods_dirs[0]##*/}"
+"$adb_bin" shell "mkdir -p '$backup' '$remote/load/mods' '$remote/config/mm3d-original/romfs' && if [ -d '$remote/load/mods/$mods_title' ]; then cp -R '$remote/load/mods/$mods_title' '$backup/'; fi"
+"$adb_bin" push "$stage/mods/$mods_title" "$remote/load/mods/"
 "$adb_bin" push "$stage/original/romfs/layout" "$remote/config/mm3d-original/romfs/"
 "$adb_bin" shell am start -n "$package/org.citra.citra_emu.ui.main.MainActivity"
 echo "Layout installed. Open the game. Previous mods (if present): $backup"

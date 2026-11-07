@@ -19,6 +19,7 @@
 #ifdef ENABLE_MM3D_PRESENTATION
 #include "mm3d/atlas_render.h"
 #include "mm3d/fog.h"
+#include "mm3d/title_ids.h"
 #endif
 
 #define MALFORMED_DISK_CACHE                                                                       \
@@ -158,7 +159,7 @@ std::optional<std::pair<u64, Shader* const>> ShaderDiskCache::UseFragmentShader(
     // Restrict this presentation option to DekUI's supported MM3D title.
     // Apply before hashing so both shader generators and the disk cache use
     // the actual no-fog configuration, without modifying guest registers.
-    if (title_id == 0x0004000000125500ULL && MM3D::Fog::disabled.load() &&
+    if (MM3D::IsMajoraMask3DTitle(title_id) && MM3D::Fog::disabled.load() &&
         fs_config.texture.fog_mode == Pica::TexturingRegs::FogMode::Fog) {
         fs_config.texture.fog_mode.Assign(Pica::TexturingRegs::FogMode::None);
     }

@@ -73,6 +73,7 @@ template<class M> void Message(M& m,U32 self,U32 id,unsigned factor) {
     case 2:doubles=Messages;triples=TripleMessages;break;
     case 4:doubles=FrenchMessages;triples=FrenchTripleMessages;break;
     case 8:doubles=SpanishMessages;triples=SpanishTripleMessages;break;
+    case 16:doubles=RussianMessages;triples=RussianTripleMessages;break;
     default:return;
     }
     const auto edits=factor==3?triples:doubles;

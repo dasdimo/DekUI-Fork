@@ -55,12 +55,18 @@ object DekuiHudUpgrade {
     }
     fun apply(context: Context) {
         val root = org.citra.citra_emu.utils.DekuiStorage.root(context)
-        val archive = File(root,"load/mods/0004000000125500/romfs/layout/Joker.Main.New.gar")
-        if (!archive.isFile) return // A fresh ROM import installs its layouts first.
+        // Prefer the title of the selected ROM; fall back to whichever supported
+        // title already has its Setup layouts installed.
+        val title = TitleIds.titleOfRom(org.citra.citra_emu.utils.DekuiStorage.game(context))
+            ?: TitleIds.all.firstOrNull {
+                File(root, "load/mods/$it/romfs/layout/Joker.Main.New.gar").isFile
+            }
+        if (title == null) return // A fresh ROM import installs its layouts first.
+        val archive = File(root,"load/mods/$title/romfs/layout/Joker.Main.New.gar")
         val spec = context.assets.open("dekui-hud8x/upgrade.json").bufferedReader().use { JSONObject(it.readText()) }
         val archiveOriginal = archive.readBytes()
         val original = authored(context,archiveOriginal,"layout.json")
-        val play=File(root,"load/mods/0004000000125500/romfs/layout/Joker.Main.Play.gar")
+        val play=File(root,"load/mods/$title/romfs/layout/Joker.Main.Play.gar")
         val playOriginal=play.readBytes()
         val playUpdated=authored(context,playOriginal,"play.json")
         check(original.size == spec.getInt("archive_size")) { "HUD archive size differs; existing HUD retained" }
@@ -83,7 +89,7 @@ object DekuiHudUpgrade {
         check(name.matches(Regex("tex1_[A-Za-z0-9_]+\\.png")))
         val textureBytes = context.assets.open("dekui-hud8x/$name").use { it.readBytes() }
         check(hash(textureBytes) == spec.getString("texture_sha256")) { "HUD texture checksum mismatch" }
-        val texture = File(root,"load/textures/0004000000125500/CUSTOM_HUD/$name")
+        val texture = File(root,"load/textures/$title/CUSTOM_HUD/$name")
         if (!texture.isFile || hash(texture.readBytes()) != hash(textureBytes)) write(texture,textureBytes)
         if(!playOriginal.contentEquals(playUpdated)) {
             val backup=File(root,"config/dekui-backups/play-before-android-hud-${hash(playOriginal).take(12)}.gar")

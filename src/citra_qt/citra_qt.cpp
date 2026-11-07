@@ -1350,9 +1350,12 @@ void GMainWindow::ConnectWidgetEvents() {
         ApplyPending(Settings::values, [&] { system.ApplySettings(); },
                      [&] { config->Save(); });
         if(open_textures.exchange(false)) {
+            const auto title=MM3D::GameFolder::SelectedTitleId(MM3D::GameFolder::Root());
             const auto path=QString::fromStdString(FileUtil::GetUserPath(FileUtil::UserPath::LoadDir))+
-                QStringLiteral("textures/0004000000125500");
-            if(!QDir().mkpath(path) || !QDesktopServices::openUrl(QUrl::fromLocalFile(path)))
+                QStringLiteral("textures/")+title;
+            if(title.isEmpty())
+                QMessageBox::warning(this,tr("Texture folder"),tr("Set up the supported game first; its texture folder is keyed to the selected title."));
+            else if(!QDir().mkpath(path) || !QDesktopServices::openUrl(QUrl::fromLocalFile(path)))
                 QMessageBox::warning(this,tr("Texture folder"),
                     tr("Could not open the texture folder. You can find it at:\n%1").arg(path));
         }

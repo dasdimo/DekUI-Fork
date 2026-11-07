@@ -246,14 +246,18 @@ void SyncTextureSource() {
     if (!chosen.isEmpty()) {
         Require(QFileInfo(chosen).isDir(),
                 QStringLiteral("Selected texture folder no longer exists"));
-        const QStringList candidates{QStringLiteral("/0004000000125500"),
-                                     QStringLiteral("/load/textures/0004000000125500"),
-                                     QStringLiteral("/textures/0004000000125500")};
-        for (const auto& suffix : candidates)
-            if (QFileInfo(chosen + suffix).isDir()) {
-                chosen += suffix;
-                break;
-            }
+        // Descend into the title-keyed subfolder of the game Setup prepared.
+        const QString title = GameFolder::SelectedTitleId(root);
+        if (!title.isEmpty()) {
+            const QStringList candidates{QStringLiteral("/") + title,
+                                         QStringLiteral("/load/textures/") + title,
+                                         QStringLiteral("/textures/") + title};
+            for (const auto& suffix : candidates)
+                if (QFileInfo(chosen + suffix).isDir()) {
+                    chosen += suffix;
+                    break;
+                }
+        }
         chosen = QFileInfo(chosen).canonicalFilePath() + QStringLiteral("/");
     }
     Write(root + QStringLiteral("/user/config/mm3d-local/texture-source.json"),
@@ -634,8 +638,11 @@ void Finalize(const QString& suppliedStage, const QString& root, const QString& 
     const QString target = parent + QStringLiteral("/") + id,
                   stamp = QString::number(QDateTime::currentMSecsSinceEpoch()),
                   backup = target + QStringLiteral("-backup-") + stamp;
+    const QString title = GameFolder::SelectedTitleId(root);
+    Require(!title.isEmpty(),
+            QStringLiteral("Set up the supported game before installing generated textures"));
     const QString textures =
-                      root + QStringLiteral("/user/load/mm3d-model-textures/0004000000125500"),
+                      root + QStringLiteral("/user/load/mm3d-model-textures/") + title,
                   textureTarget =
                       textures + QStringLiteral("/") + id + QStringLiteral("-generated"),
                   textureBackup = parent + QStringLiteral("/.") + id +

@@ -1,9 +1,12 @@
 import configparser
+import hashlib
 import json
+import struct
 import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
+from release_setup import write
 from setup_game_folder import setup, validate, extract, RESOURCES
 
 USA_FACTS = {'program_id': '0004000000125500', 'remaster_version': 2,
@@ -76,6 +79,64 @@ class GameFolderTests(unittest.TestCase):
                 self.assertFalse(config.getboolean('Renderer', key + '\\default'))
             self.assertEqual(config.getint('Renderer', 'graphics_api'), 2)
 
+
+    def test_europe_setup_installs_russian_overlay(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);rom=root/'original.cci';rom.write_bytes(b'original')
+            calls=[]
+            def fake_build(original,restoration,output,messages=None):
+                calls.append(messages)
+                write(output,'romfs/message/eu/eue.gmsg',b'generated')
+            with patch('setup_game_folder.validate', return_value={'title_id':'0004000000125600','main_partition_sha256':'0'*64}), patch('setup_game_folder.extract',
+                    side_effect=lambda rom,out:out.mkdir(parents=True)), patch('setup_game_folder.build', side_effect=fake_build):
+                setup(root,root,rom)
+            profile=json.loads((RESOURCES/'setup-fingerprints.json').read_text())['titles']['0004000000125600']['rus']
+            self.assertEqual(calls,[profile['messages']])
+            user=root/'user';mod=user/'load/mods/0004000000125600'
+            vendored=json.loads((RESOURCES/'rus/manifest.json').read_text())
+            eue=[e for e in vendored['files'] if e['path']=='message/eu/eue.gmsg'][0]
+            # The expansion base under setup/original is the vendored RU archive.
+            base=user/'setup/original/romfs/message/eu/eue.gmsg'
+            self.assertEqual(hashlib.sha256(base.read_bytes()).hexdigest(),eue['sha256'])
+            # Generated output wins over the plain vendored copy at eue.gmsg.
+            self.assertEqual((mod/'romfs/message/eu/eue.gmsg').read_bytes(),b'generated')
+            # Every other RU romfs file rides along byte-exact as a mod copy.
+            for entry in vendored['files']:
+                if entry['path']=='message/eu/eue.gmsg': continue
+                self.assertEqual((mod/'romfs'/entry['path']).read_bytes(),
+                                 (RESOURCES/'rus'/entry['path']).read_bytes(),entry['path'])
+
+    def test_usa_setup_selects_no_russian_overlay(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);rom=root/'original.cci';rom.write_bytes(b'original')
+            with patch('setup_game_folder.validate', return_value={'title_id':'0004000000125500','main_partition_sha256':'0'*64}), patch('setup_game_folder.extract',
+                    side_effect=lambda rom,out:out.mkdir(parents=True)), patch('setup_game_folder.build') as made:
+                setup(root,root,rom)
+            self.assertEqual(made.call_args.args[3],None)
+
+    def test_russian_message_profile_matches_vendored_overlay(self):
+        import classic_localized_text
+        from single_screen_text import fnv
+        titles=json.loads((RESOURCES/'setup-fingerprints.json').read_text())['titles']
+        profile=titles['0004000000125600']['rus']
+        self.assertEqual(profile['manifest'],'rus/manifest.json')
+        manifest=json.loads((RESOURCES/'rus'/'manifest.json').read_text())
+        entry=[e for e in manifest['files'] if e['path']=='message/eu/eue.gmsg'][0]
+        data=(RESOURCES/'rus'/'message/eu/eue.gmsg').read_bytes()
+        self.assertEqual(hashlib.sha256(data).hexdigest(),entry['sha256'])
+        messages=profile['messages']
+        text=messages['text']
+        # The Russian text is the translation itself: the native slot carries
+        # it, so there is no English owl expansion, only the guarded classic row.
+        self.assertIsNone(text['english'])
+        self.assertEqual(text['localized'],['eue'])
+        prompt=[i for i in range(struct.unpack_from('<I',data,8)[0])
+                if struct.unpack_from('<H',data,16+i*20)[0]==0xc01][0]
+        off,size=struct.unpack_from('<II',data,16+prompt*20+12)
+        self.assertEqual(hex(fnv(data[off:off+size])),messages['prompt_fnv'])
+        assets,_=classic_localized_text.build(RESOURCES/'rus'/'message/eu',['eue'])
+        self.assertEqual(hashlib.sha256(assets['eue.gmsg']).hexdigest(),
+                         messages['hashes']['eue'])
 
     def test_missing_rom(self):
         with tempfile.TemporaryDirectory() as t:

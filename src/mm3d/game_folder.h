@@ -10,9 +10,14 @@
 #include <QtEndian>
 #include <QStandardPaths>
 #include "mm3d/desktop_storage.h"
+#include "mm3d/mods_location.h"
+#include "mm3d/title_ids.h"
 
 namespace MM3D::GameFolder {
-inline constexpr auto Hash = "9c756279e3ec00bb9009f92ca2e7b9ec8b1fcdfcd9de057658b209caa24323da";
+// Verified Rev 1 main partitions; see resources/mm3d/supported-rom.json.
+inline constexpr auto UsaHash = "9c756279e3ec00bb9009f92ca2e7b9ec8b1fcdfcd9de057658b209caa24323da";
+inline constexpr auto EurHash = "a26108ef34b49df421cca20eda1b4f38f596ebef9ac6b9c70a64245be055a722";
+inline constexpr quint64 UsaSize = 654643200, EurSize = 668647424;
 inline QString LegacyRoot() {
     // AppImage mounts its executable read-only; use the folder holding the image.
     const auto appimage = qEnvironmentVariable("APPIMAGE");
@@ -77,14 +82,15 @@ inline QString Rom() {
     return chosen;
 }
 inline QString MissingGameMessage() {
-    return QStringLiteral("Select your decrypted MM3D USA Rev 1 game-card dump (.cci or .3ds) from the startup screen.");
+    return QStringLiteral("Select your decrypted MM3D USA or Europe Rev 1 game-card dump (.cci or .3ds) from the startup screen.");
 }
 inline QString User() { return Root() + QStringLiteral("/user/"); }
 inline QString ValidateSetup(const QString& user) {
     QFile ready(QDir(user).filePath(QStringLiteral("setup/ready.json")));
     if(!ready.open(QIODevice::ReadOnly)) return QStringLiteral("Game setup is incomplete. Preserve your user folder and saves, then try a fresh application folder.");
     const auto setup=QJsonDocument::fromJson(ready.readAll()).object();
-    if(setup[QStringLiteral("version")].toInt()!=1 || setup[QStringLiteral("rom_sha256")].toString()!=QString::fromLatin1(Hash))
+    const auto sha=setup[QStringLiteral("rom_sha256")].toString();
+    if(setup[QStringLiteral("version")].toInt()!=1 || (sha!=QString::fromLatin1(UsaHash) && sha!=QString::fromLatin1(EurHash)))
         return QStringLiteral("Game setup is incompatible. Keep your saves and prepare a new application folder.");
     if(setup[QStringLiteral("resource_version")].toInt()!=2 ||
        setup[QStringLiteral("layout_version")].toInt()!=2 ||
@@ -100,7 +106,7 @@ inline QString Validate() {
     if (header.size()!=512 || header.mid(0x100,4)!="NCSD") return QStringLiteral("Unsupported game container.");
     const auto word = [&](int at) { return qFromLittleEndian<quint32>(header.constData()+at); };
     const quint64 base=quint64(word(0x120))*512, size=quint64(word(0x124))*512;
-    if(base<512 || size!=654643200 || base+size>quint64(file.size()) || !file.seek(base))
+    if(base<512 || (size!=UsaSize && size!=EurSize) || base+size>quint64(file.size()) || !file.seek(base))
         return QStringLiteral("Unsupported or incomplete game dump.");
     QCryptographicHash hash(QCryptographicHash::Sha256);
     for (quint64 remaining=size; remaining;) {
@@ -108,7 +114,36 @@ inline QString Validate() {
         if(bytes.isEmpty()) return QStringLiteral("Could not read the game.");
         hash.addData(bytes); remaining-=bytes.size();
     }
-    if(hash.result().toHex()!=Hash) return QStringLiteral("Unsupported game revision/content. The supported decrypted USA Rev 1 dump is required.");
+    const auto digest=hash.result().toHex();
+    if(digest!=QByteArray(UsaHash) && digest!=QByteArray(EurHash)) return QStringLiteral("Unsupported game revision/content. The supported decrypted USA or Europe Rev 1 dump is required.");
     return ValidateSetup(User());
+}
+inline QString SelectedTitleId(const QString& root) {
+    // Lower-case title id of the game Setup prepared: the record in
+    // user/setup/ready.json wins, then the game card beside the app, then a
+    // scan of installed mods/ directories. Never hard-codes either title.
+    const auto user=QDir(root).absoluteFilePath(QStringLiteral("user"));
+    QFile ready(QDir(user).filePath(QStringLiteral("setup/ready.json")));
+    if(ready.open(QIODevice::ReadOnly)) {
+        const QString title=QJsonDocument::fromJson(ready.readAll()).object()
+            .value(QStringLiteral("title_id")).toString().toLower();
+        bool ok=false;const quint64 id=title.toULongLong(&ok,16);
+        if(ok&&IsMajoraMask3DTitle(id)) return title;
+    }
+    QFile file(FindRom(root));
+    if(file.open(QIODevice::ReadOnly)) {
+        const auto header=file.read(512);
+        if(header.size()==512&&header.mid(0x100,4)=="NCSD") {
+            const quint64 base=quint64(qFromLittleEndian<quint32>(header.constData()+0x120))*512;
+            if(base>=512&&file.seek(base)) {
+                const auto ncch=file.read(512);
+                if(ncch.size()==512&&ncch.mid(0x100,4)=="NCCH") {
+                    const quint64 id=qFromLittleEndian<quint64>(ncch.constData()+0x118);
+                    if(IsMajoraMask3DTitle(id)) return QStringLiteral("%1").arg(id,16,16,QLatin1Char('0'));
+                }
+            }
+        }
+    }
+    return ModsLocation::InstalledTitleId(QDir(user).absoluteFilePath(QStringLiteral("load")));
 }
 }

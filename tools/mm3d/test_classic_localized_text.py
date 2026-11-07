@@ -58,6 +58,46 @@ class ClassicLocalizedTextTests(unittest.TestCase):
             # Last-night failure stays native and keeps its timed dismissal.
             self.assertIn((0x29, 30), localized.decode(entries[0x1b94][1]))
 
+    RU_ARCHIVE = Path(__file__).resolve().parents[2] / 'resources/mm3d/rus/message/eu/eue.gmsg'
+    RU_HEADER = Path(__file__).resolve().parents[2] / 'src/mm3d/classic_localized_text.h'
+
+    def russian_row(self):
+        rows, _ = localized.collect(self.RU_ARCHIVE.parent, ['eue'])
+        self.assertEqual(len(rows), 1)
+        return rows[0]
+
+    def test_header_carries_three_language_rows(self):
+        header = self.RU_HEADER.read_text(encoding='utf-8')
+        self.assertIn(f'std::array<Dialogue,{len(localized.SPEC)}>', header)
+        for language in sorted(spec['language'] for spec in localized.SPEC.values()):
+            self.assertIn('    {' + str(language) + ',', header)
+        self.assertEqual(len(re.findall(r'^    \{\d+,', header, re.M)), 3)
+
+    def test_russian_row_guards_match_the_vendored_archive(self):
+        _, owl, classic, returned, song, questions = self.russian_row()
+        header = self.RU_HEADER.read_text(encoding='utf-8')
+        row = [line for line in header.splitlines() if line.startswith('    {16,')][0]
+        # The three bare guards sit between the returned-wording recipe and the
+        # Song-of-Time recipe; recipe-internal hashes always follow a length.
+        guards_match = re.search(
+            r'\},(0x[0-9a-f]{1,16})ULL,(0x[0-9a-f]{1,16})ULL,(0x[0-9a-f]{1,16})ULL,\{', row)
+        self.assertIsNotNone(guards_match)
+        guards = [int(h, 16) for h in guards_match.groups()]
+        expected = [localized.text.fnv(raw.ljust(len(owl), b'\0'))
+                    for raw in (owl, classic, returned)]
+        self.assertEqual(guards, expected)
+        # The authored wording round-trips through the real codec.
+        for raw in (classic, returned, *questions):
+            self.assertEqual(localized.encode(localized.decode(raw)).rstrip(b'\0'),
+                             raw.rstrip(b'\0'))
+        native = localized.decode(owl)
+        self.assertIn((0x2f, 2), native)
+        for choice in localized.SPEC['eue']['choices']:
+            self.assertIn(choice, native)
+        # Stock EUR-English owl prompt must NOT satisfy the language-16 guard.
+        from test_text_profiles import STOCK_PROMPT
+        self.assertNotEqual(localized.text.fnv(STOCK_PROMPT.ljust(len(owl), b'\0')), guards[0])
+
 
 if __name__ == '__main__':
     unittest.main()

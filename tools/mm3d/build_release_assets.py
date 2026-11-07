@@ -11,7 +11,7 @@ import tempfile
 from release_setup import digest, safe, write
 from restore_action_flips import patch as restore_actions
 from stop_map_slides import patch as stop_slides
-from classic_owl_text import prepare as prepare_owl
+from classic_owl_text import ENGLISH_PROMPT_FNV, prepare as prepare_owl
 from classic_localized_text import build as prepare_localized
 
 RESOURCES = Path(__file__).resolve().parents[2] / 'resources/mm3d'
@@ -78,7 +78,9 @@ def message_profile(original, manifest):
     return found[0]
 
 
-def build(original, restoration, output):
+def build(original, restoration, output, messages=None):
+    # messages overrides the extracted-tree profile (for example the Russian
+    # overlay for the Europe title); otherwise the tree identifies the title.
     manifest = json.loads((RESOURCES / 'setup-fingerprints.json').read_text())
     roots = {'original': original, 'restoration': restoration}
     if output.exists():
@@ -104,14 +106,25 @@ def build(original, restoration, output):
         # Expand native message storage from the user's verified game. Runtime
         # hooks select classic wording only when the corresponding option is on.
         # The title profile names the archives and their GMSG language codes.
-        messages = message_profile(original, manifest)
+        if messages is None:
+            messages = message_profile(original, manifest)
         source_dir = original / messages['source_dir']
-        english, _, _ = prepare_owl((source_dir / (messages['text']['english']['name'] + '.gmsg')).read_bytes(),
-                                    messages['text']['english']['language'])
+        prompt_fnv = messages.get('prompt_fnv')
+        prompt_fnv = ENGLISH_PROMPT_FNV if prompt_fnv is None else int(prompt_fnv, 0)
+        generated = {}
+        if messages['text'].get('english') is not None:
+            english, _, _ = prepare_owl((source_dir / (messages['text']['english']['name'] + '.gmsg')).read_bytes(),
+                                        messages['text']['english']['language'], prompt_fnv)
+            generated[messages['text']['english']['name'] + '.gmsg'] = english
         localized, _ = prepare_localized(source_dir, messages['text']['localized'])
-        generated = {messages['text']['english']['name'] + '.gmsg': english, **localized}
+        generated.update(localized)
         if set(generated) != {name + '.gmsg' for name in messages['names']}:
             raise ValueError('Text profile does not cover every extracted message archive')
+        # The expansion of each pinned archive is deterministic; the profile
+        # pins the generated hash so any pipeline drift fails the build.
+        for name in messages['names']:
+            if digest(generated[name + '.gmsg']) != messages['hashes'][name]:
+                raise ValueError('Generated message drifted from the profile: ' + name)
         for name, data in generated.items():
             write(stage, messages['source_dir'] + '/' + name, data)
         stage.rename(output)

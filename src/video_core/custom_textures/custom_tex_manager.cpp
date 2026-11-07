@@ -4,6 +4,7 @@
 
 #include <json.hpp>
 #include "common/file_util.h"
+#include "mm3d/title_ids.h"
 #include "common/literals.h"
 #include "common/memory_detect.h"
 #include "common/microprofile.h"
@@ -31,12 +32,12 @@ using namespace Common::Literals;
 
 std::string TextureLoadPath(u64 title_id) {
 #ifdef ANDROID
-    if (title_id == 0x0004000000125500ULL && FileUtil::Exists("/@textures/")) {
+    if (MM3D::IsMajoraMask3DTitle(title_id) && FileUtil::Exists("/@textures/")) {
         return "/@textures/";
     }
 #endif
 #ifdef ENABLE_MM3D_GAME_FOLDER
-    if(title_id==0x0004000000125500ULL) {
+    if(MM3D::IsMajoraMask3DTitle(title_id)) {
         FileUtil::IOFile source(GetUserPath(FileUtil::UserPath::ConfigDir)+"mm3d-local/texture-source.json","r");
         if(source.IsOpen()&&source.GetSize()<=65536) {
             std::string text(source.GetSize(),'\0');source.ReadBytes(text.data(),text.size());

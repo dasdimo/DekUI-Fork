@@ -11,6 +11,10 @@ import single_screen_text as text
 
 PROMPT = 0x0C01
 CAPACITY = 1024
+# Stock owl prompts per supported base archive; the guard pins the exact
+# vanilla wording the slot expansion is verified against.
+ENGLISH_PROMPT_FNV = 0x0bc4fc20522543ef
+RUSSIAN_PROMPT_FNV = 0xdd6489f7c68ef87e
 
 def dialogue():
     # 27/28: instant text on/off; 31/2: wait then next page; 2f: choices.
@@ -28,10 +32,12 @@ def dialogue():
     tokens += [(1,), (0x3a, 2), (0x2f, 2), 'Yes', (1,), 'No', (0x3a, 11), (0,)]
     return tokens
 
-def prepare(data, language=2):
+def prepare(data, language=2, prompt_fnv=ENGLISH_PROMPT_FNV):
+    # The expansion is wording-neutral (the stock payload is copied and given
+    # capacity); the guard pins which stock prompt the profile was verified on.
     original = text.messages(data, language)
     raw = original[PROMPT]
-    if text.fnv(raw) != 0x0bc4fc20522543ef:
+    if text.fnv(raw) != prompt_fnv:
         raise ValueError('Unsupported owl prompt; archive left untouched')
     tokens = dialogue()
     replacement = text.encode(tokens)

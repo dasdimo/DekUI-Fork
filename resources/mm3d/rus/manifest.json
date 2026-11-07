@@ -1,0 +1,696 @@
+{
+ "schema": 1,
+ "source": {
+  "name": "LoZMM3D_(PAL_rev1)_RUS_Patch_v1.1",
+  "publisher": "ZELDA64RUS",
+  "version": "1.1",
+  "target": "The Legend of Zelda: Majora's Mask 3D EUR Rev1 3ds CRC32: 943ED937 or 3A87ABAC"
+ },
+ "files": [
+  {
+   "path": "actors/zelda2_boss01.gar.lzs",
+   "size": 377284,
+   "sha256": "5e98c49457918d7716bbb8ab0796e2fd0a3c033ae460b1d71f3913ea0d3baa33",
+   "stock_sha256": "303131ec09b6e1a4961bf15f4c804f928b0e9236051e7f02f10fdec775e4a11a"
+  },
+  {
+   "path": "actors/zelda2_boss02.gar.lzs",
+   "size": 215817,
+   "sha256": "b44207799472038b684a5314675a2e057b7d047be06772998a10d182468b7ce4",
+   "stock_sha256": "a842425088e6f65487f2828cd5cf16f67a4b905bfb1b0d3d4170a3ea26398b81"
+  },
+  {
+   "path": "actors/zelda2_boss03.gar.lzs",
+   "size": 365865,
+   "sha256": "8e4612803b65fece461d829b5584df986792765b4671cf7f594e71908c60b7a2",
+   "stock_sha256": "8b1557d23ad1d121b42baa50b0ae701c5167a985faf4e96529fcf8e3ca05c650"
+  },
+  {
+   "path": "actors/zelda2_boss07.gar.lzs",
+   "size": 689002,
+   "sha256": "57665f4e126b1a4a33a19b66d04b09bbb11c6ae49aec78d2109dfe8bd998601a",
+   "stock_sha256": "2c2fbc597a9792b1e4423b307e7e37317b1eeea5d6226dab748bb47b6c472818"
+  },
+  {
+   "path": "actors/zelda2_boss_hakugin.gar.lzs",
+   "size": 400241,
+   "sha256": "498d825e632adc18fe4d718a397a4f4f79229ae78404aee0a544d3dbb1fe5568",
+   "stock_sha256": "1cc354dd7f2d1ca3a8ee577012267a72c628b60ea1538cabd33d6bbe2f04e21c"
+  },
+  {
+   "path": "actors/zelda2_mag.gar.lzs",
+   "size": 130892,
+   "sha256": "47771f1e9d96a60586f245fb0bc144f85e2759726df5cbb79e04a4604e8a6053",
+   "stock_sha256": "fc3d91e4ab17b4a6649a0238fa69eabfb3f2ffb2a0568ebc370fa7ed039c9082"
+  },
+  {
+   "path": "layout/EU_English/Joker.Main.Ending.gar",
+   "size": 4300,
+   "sha256": "497fd81e8351fe9304f18bebf38c47e49837956cd2e1ca5372b2c187be71d428",
+   "stock_sha256": "78282d6edc0672c579445639c7b34bb7ee341b1c38f4fff43f5b781749aef044"
+  },
+  {
+   "path": "layout/EU_English/Joker.Main.FileSelect.gar",
+   "size": 524516,
+   "sha256": "f7d21cbd4ce8a452685572d80edd56ee1d2d72d825599e9a4b40ceee93c33300",
+   "stock_sha256": "9afa1df97f71583e85948a2cb512c96fb1fd769a147663e78d5fb0a4ba7ed4a8"
+  },
+  {
+   "path": "layout/EU_English/Joker.Main.Play.Countdown.gar",
+   "size": 16592,
+   "sha256": "15e2d8c11bd1de3b1a9ccc18db0df3449defa612d26d520366ea528910ee941c",
+   "stock_sha256": "fd6e70b8b6750afa212537e1bf7109406e3c4dcf04a8425bb46f0d4126c7737e"
+  },
+  {
+   "path": "layout/EU_English/Joker.Main.Play.HintMovie.gar",
+   "size": 67960,
+   "sha256": "0aae1079b2d215996133f5c3011e51a55b3b7be105e47d3b0e7fab302608b5ef",
+   "stock_sha256": "5021806440b74dfd6c0bff4d8de25085bab0d799492cfdae5924aa1f5b1408b0"
+  },
+  {
+   "path": "layout/EU_English/Joker.Main.Play.Option.gar",
+   "size": 74088,
+   "sha256": "b1a9bbd06f7eb68e14e26092a4bfb6e816615880d57cafd0bf1c4c806f715946",
+   "stock_sha256": "c49cce10d35a45dff6b4be2e62234a998541ce8784c756dc285ea4b888bdb825"
+  },
+  {
+   "path": "layout/EU_English/Joker.Main.Play.Perfect.gar",
+   "size": 16604,
+   "sha256": "40b37b4437428d93973e0337692f98e72cc2274924cd99257534f9a9507fbf33",
+   "stock_sha256": "4fe94c971fb58177b3404d226c26a7f9be31f51e9c921737f4ef3b6b8968698f"
+  },
+  {
+   "path": "layout/EU_English/Joker.Main.Play.SubMenu.gar",
+   "size": 590736,
+   "sha256": "83369cd07dcaea69c906739dc0a77f39cbf512cb5af23af3f4c3352bd01c2bb3",
+   "stock_sha256": "e37bd255bfbe6791ce40afb0e46ba69da874cf35a83732e4a9166cfe89cba0e0"
+  },
+  {
+   "path": "layout/EU_English/Joker.Main.Play.gar",
+   "size": 131300,
+   "sha256": "3d47a5bede1d6617e6fec95cc2bffe65a58d95a9024a863df810395093ea1c9a",
+   "stock_sha256": "c3b1890fd827ddc1c01bbfce09fd7a474fc6c4b4b100e7e42396ad9cc4eff7f3"
+  },
+  {
+   "path": "layout/EU_English/Joker.Main.Startup.gar",
+   "size": 32988,
+   "sha256": "382c4f6cf73eb1cb47906d1ce2cb521b99e5e72416f69f84873a248884c6572a",
+   "stock_sha256": "5153430a77512ea27c291b91699ea13a8ced79e20af29c4819de42bbfc3847ee"
+  },
+  {
+   "path": "layout/EU_English/Joker.Main.gar",
+   "size": 283464,
+   "sha256": "adcd5400a98267003913577334f5c2c111c768755487d2363f244d9265a599af",
+   "stock_sha256": "16b2b9a57068d792e414d7ab2925f80eb80a5088bf380c52a94c5a79d56df8d0"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/001.ctxb",
+   "size": 32840,
+   "sha256": "b891d4dd8462a1feca087716061793a38f5f3e7d90db05aea3789843a0ab138e",
+   "stock_sha256": "e8bbeb2a29745444dbeb32650d51935fb5aacc9f8cec046247fb0f9471a75dc2"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/002.ctxb",
+   "size": 32840,
+   "sha256": "c0363cf98b1fc7cb07f5f3007a6364fe90e1a3e836534a411533eb8ce9e24772",
+   "stock_sha256": "b492f661e82b2f8198701111772a2f1c5b716499ca3be58df1c2e49af43c23ee"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/003.ctxb",
+   "size": 32840,
+   "sha256": "a4b832a552f9dab0b58ac643514df328ed9705433ac3aa0d16a860bb4f3f60d9",
+   "stock_sha256": "495dc2358ae2be392b7f1e9fd37d381c9bba7b449eed28f5de3a3efd7beca4d6"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/004.ctxb",
+   "size": 32840,
+   "sha256": "c791e95b640054e3ad490d733cae06fdf8853b33d95147c3cb6d9c22ab605c7f",
+   "stock_sha256": "9a6826730d1c8ee1426ef8207fe2e7596f14e96b31472aec5534c976673688a5"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/005.ctxb",
+   "size": 32840,
+   "sha256": "e2e0136b89d8cf1c296c9c1973dd423f4ac1f793465210e9d2db0123f5d4d555",
+   "stock_sha256": "60e24c4f169160fa2de0ff7754d99ddd0457d80673240c288804643043d0b0af"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/006.ctxb",
+   "size": 32840,
+   "sha256": "81ad3beae5582714487de9ca61a308b65425072f1b6860f069558c1800020c7f",
+   "stock_sha256": "4fefe1dda687f92e796ec6172a68a77e4485f07db2043899b359beba075d591b"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/007.ctxb",
+   "size": 32840,
+   "sha256": "ac2bffb793634c283d9587fb5a856f09465f68c72e5a58d4203c1deaaba1eae1",
+   "stock_sha256": "ed5821ad36fcd2446f0ebb36fb985a3c3ee32142ebaf9200df2c609f185668e3"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/008.ctxb",
+   "size": 32840,
+   "sha256": "5c892ebd850534138e2fea51b492a34d6617e0151ac4b14767bb4f985892ed46",
+   "stock_sha256": "391776f6c92ecc27d2428ad20df3c17d6d6065cc59e073ee23395cab22397581"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/009.ctxb",
+   "size": 32840,
+   "sha256": "3591e5f222f55d9e895758b4901686e6c9f00ef72c2568d82512d6062aaaeb23",
+   "stock_sha256": "b8c4c72cc86375a6c23bc93e9e9449d1b55f07be22c75db5651176ae52f5a5cd"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/010.ctxb",
+   "size": 32840,
+   "sha256": "2f5815a0ef7dfccd162e894bf25e9d1331e8cf16927ec1969a6895f2550845e5",
+   "stock_sha256": "4816684f26dfc44c487a4f2a9f5cd5987fd3dbb7f513bab0b7a01d76f9a7821e"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/011.ctxb",
+   "size": 32840,
+   "sha256": "5a57d759fb15b130492bb55031cef03e5a82757b45396060362399033426a656",
+   "stock_sha256": "f531e73aad72ce9758d830a31c66efb2d6dd6134f81f05c3eabf59c979e9382d"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/012.ctxb",
+   "size": 32840,
+   "sha256": "e319cdf81676cb711293fd71febf5ffe13edda74bf5f2e77b2f4408dc9c19c4e",
+   "stock_sha256": "e4ad4221d0dd98f79be138ee22266927da1c5b32f95de16cceb854c22f57479c"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/013.ctxb",
+   "size": 32840,
+   "sha256": "3b749e965d4e68c2f569ba1d8d4bd6a232085877febdd23d32c337914c99d084",
+   "stock_sha256": "bb45e6306817b5257389543f39a3fe05ea1e4f91042066a40802c0e929da4d31"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/014.ctxb",
+   "size": 32840,
+   "sha256": "ef0002edfa2134668b283d3d0e2ef5d51a48903211f6de66bb6561f97a2c80bb",
+   "stock_sha256": "22211db4b1a1e7bea607d49fc44a18b9ba5883e600e3181a7b175d861d0182ba"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/015.ctxb",
+   "size": 32840,
+   "sha256": "c121a74d1a8b68f866bab51b7adb90ff232f3612a4d384be8fa4266e247c59ad",
+   "stock_sha256": "77b594b083caca055239ee0aca23122ca3b689d7784a268b767fa04627c57305"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/016.ctxb",
+   "size": 32840,
+   "sha256": "d4ffd2cc4c1dc9d604aa528905dd74fb5d486d2f0cb535c372a929982998a5a3",
+   "stock_sha256": "f2e457b2cd51502fb122ca69b7abcb7c7fbf6ed17e119e7ae1dc6b5becdc1da0"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/017.ctxb",
+   "size": 32840,
+   "sha256": "b10ca477cfd017938039a3d2ffa8278e6271574b69b5b388d24e3bfdf920f761",
+   "stock_sha256": "89b9ce714c9faf551386a491ef6fa882f587c0fab0f017d476c5ba5d00d2bc76"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/018.ctxb",
+   "size": 32840,
+   "sha256": "4744f616c13a9668925e7f0c7a6495fd36bb952606249a3d4b7dccfbd8ea06f8",
+   "stock_sha256": "00ec0f9c41ad4f9433d55b473b7fb02959e0018ec1ae907c8b1ae7a60b8267c2"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/019.ctxb",
+   "size": 32840,
+   "sha256": "b75114c46280b84d42e706bfff9d9abffe392c529e41ccd5da0fc187e57c6ce0",
+   "stock_sha256": "6b32cc3430d88c913c45840cf2ee6edab64146a0396d9534ecccbac9a7f553e7"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/020.ctxb",
+   "size": 32840,
+   "sha256": "d2580b8af80fef01f573ad97e4e9fa68d4641e2847d5300f8498c932771da542",
+   "stock_sha256": "0f8e020f0f89db3b9c386be027ef7cf0434cbccf3688b495cd0d6528c457acf2"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/021.ctxb",
+   "size": 32840,
+   "sha256": "22a9169bcc879b8e3b093ea0f24cde64f88f08d78f5383c0db492f1ef5d120f0",
+   "stock_sha256": "e7ebdee95189f1645736e1b493cca81a7e02bf0283416a6a57c78f316c9bdaa0"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/022.ctxb",
+   "size": 32840,
+   "sha256": "3acd248c9e15ce31f0fd15e1f3df53a770e856cb3aebb376c4775a1bb61b50e5",
+   "stock_sha256": "f9efd94bee4e5ed51b1b5fa9ebead7af8734100b10e344c34ea3bc6191d372fa"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/023.ctxb",
+   "size": 32840,
+   "sha256": "8dff3dcc0f437c985a93dd4cadf292c5938947f5e420caadc27789669314138f",
+   "stock_sha256": "19d2bf571a9cbfabb99d47f72d699724ee3689580c035a94006c48fe1d7fad04"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/024.ctxb",
+   "size": 32840,
+   "sha256": "e637b63ae1422f48739edf75815b0b1dbc9cbdaa9b9dce364fb53139aac141e4",
+   "stock_sha256": "4dee629a44a373be46b9f3a2ae6ad2b0fc5925d79bfa2f8d504ff8912b05c389"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/025.ctxb",
+   "size": 32840,
+   "sha256": "83fbcfec626d23ebb584138b9d957caca338d5f601e28b58729d329cc0449215",
+   "stock_sha256": "94042e346ce28fe7c21f8d4b750963667427809b39b941c47f87f8f4871f7ffc"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/026.ctxb",
+   "size": 32840,
+   "sha256": "6428a005d23de4e44645fe1f7b0a3b0d634feba3e6b15511d26829861cff231b",
+   "stock_sha256": "23b58a9a2b0643674f558cfea007fabcd8a5f2159720704b4806246da9c75f09"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/027.ctxb",
+   "size": 32840,
+   "sha256": "9cfb872341e1b17065ae830b58365c7fb089f220384d14bfa7a2cdd13894c19c",
+   "stock_sha256": "ece082b27f215592d34a1e70184836a550870bfd79d3e3b56c3fd5ebedb1c517"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/028.ctxb",
+   "size": 32840,
+   "sha256": "4c1f45600e66bfc8bdebf7ff10e5449980d9f1c56cd861f5bbaabdd2c7e40a1e",
+   "stock_sha256": "8766f0c5b9d7a4f41c5beae97403a2b946f8282d1e8fcb4e741e1114e33ec7a0"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/029.ctxb",
+   "size": 32840,
+   "sha256": "d3c1de679f9f0a04b42b4e9428900bb5d59a1c06a24e2c281f9daa1725144b50",
+   "stock_sha256": "a76b8c498367a0669de49c880b4a88fdeeaf3c3f15abf8e1e3f7d090826379f1"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/030.ctxb",
+   "size": 32840,
+   "sha256": "bfacbde4284bb492cdd7a2962f46d9034eea340994d2b776904f7f385fcb1176",
+   "stock_sha256": "e6596a9910cea11538fcf2453ddb0c4e5b98ff79b91e1b4bf1638fc7b73dddb6"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/031.ctxb",
+   "size": 32840,
+   "sha256": "e4bb2c171369faa6b73d619ec4a45108df4782313c5db3288e7ed2e8ef0196d8",
+   "stock_sha256": "1a138afba44a5ee4ef2a94ef22bc7571e820161140ea30d6054a9fe5cda5c949"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/032.ctxb",
+   "size": 32840,
+   "sha256": "b4d3f5f467e9a7789453d20188b56e751fc4d8f3db470f3b8aa2cfce4f10e2e5",
+   "stock_sha256": "a37425050ced71e5e3b37fbe7196787d8077ce6c3c924a5d42e1aa72ccd247c5"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/033.ctxb",
+   "size": 32840,
+   "sha256": "bef08faab77a99408a3055712b440e84544deb7a173e118b739b38ac94e5bd0b",
+   "stock_sha256": "0b34c00fee35083d5b8636ea5fd5fd2439d9b5bfcb116aa59a9915009586a74e"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/034.ctxb",
+   "size": 32840,
+   "sha256": "2327b6e1dc646a634f649d8522aa1357e6a1dd297109c570fc6d6cb2632f80f2",
+   "stock_sha256": "3057f1e96a4107e35f73ce7168fce5929506ad3ebb4c137c79179d2dc6ca713d"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/035.ctxb",
+   "size": 32840,
+   "sha256": "169b49c449d91a72d80393d06c3bd198f80b745233fb0b9580efa0d654a83a67",
+   "stock_sha256": "2d74c03f1cbce752f190c148bb9a77fc686db1258ef46f828b7cd634a79622b9"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/036.ctxb",
+   "size": 32840,
+   "sha256": "f08726726a5d51cdc633de88f60edd39e288816864155bb0bc09d3ee9be75c18",
+   "stock_sha256": "912a8e0803419f9afcf2fd82d4e12e7731e1e2031ec896729393851ec43eb899"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/037.ctxb",
+   "size": 32840,
+   "sha256": "3008c40eff6b5661fd8efbeb89285953806b86060be92450e247bb9096396575",
+   "stock_sha256": "0a3b8d415038f4d596e0929a1e1805624eb8499118f9b3fba604d28eb08c208f"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/038.ctxb",
+   "size": 32840,
+   "sha256": "86c9774ee53dded077c9b57d6def5b6889fcf2002496071f096146834811b680",
+   "stock_sha256": "50ecf5406c5abdb1934379a471eff46366311ba41ad7c5caf94a7255cba1ae75"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/039.ctxb",
+   "size": 32840,
+   "sha256": "d1eda448b18cd691612256a488a4546829984d35816284b8890c408676b5afff",
+   "stock_sha256": "ab4b22d41025cb675c538f898020a74bd67babb2ee410b6a8367f50ca7d12b8f"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/040.ctxb",
+   "size": 32840,
+   "sha256": "4501846468f67903995faf01af940b34389ca912b0000ad71d9c4f10c298cc92",
+   "stock_sha256": "6c5b82c61c16010d91fbf2dc60e21b9d845d27739153671565eb794a339fb32f"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/041.ctxb",
+   "size": 32840,
+   "sha256": "d6816e67cae3b8d199e765e145ea067e998fdd87d8e36bd23daec4c8bc23fe5f",
+   "stock_sha256": "7ed80b12794b29e335280c401e07ed7071f99e59a78a64500603cd5767d72f69"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/042.ctxb",
+   "size": 32840,
+   "sha256": "c9f0d151c6b785877e7b91a6d312d8090d5444b35c9f2c8f40e904cb9cc6e2e6",
+   "stock_sha256": "634142f25840d48efac79d0a0d0bbafd653b4471dcd9f666abbf86d419442d50"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/043.ctxb",
+   "size": 32840,
+   "sha256": "01287b01f85accddd6326a81d4b8900b5a4c36164934b70db3dfb47bb05ebbaf",
+   "stock_sha256": "2a0de1f149ee10545059b157e5dc349e20c8333617eb5d5e1dc4d0c83c73b996"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/044.ctxb",
+   "size": 32840,
+   "sha256": "c3fff4309a3ef860057a799d6b8c4b9a4283989c6bf9f98d5a8d4661dfac3d54",
+   "stock_sha256": "0b1ad64a5b8fcbc6f0c5e4e6ab1d4d5cdd83b6bc6c8e682736ab8797412a4235"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/045.ctxb",
+   "size": 32840,
+   "sha256": "2e75a7f77cde909a11c32df3ed296646f69d3f8cf3205f243f8f0d4607a08301",
+   "stock_sha256": "92d4902a7b61240a1b50e9638ed489b4f4846071ef8184fda52ebd5e7d4d56b2"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/046.ctxb",
+   "size": 32840,
+   "sha256": "31b270f7e31f291c3bd55e3f0d185b057f7292e6dc5cdf22d93252d727657cfa",
+   "stock_sha256": "7a20b342941e066cfe32c543ba78d1a85889c834b73fe408708295c9049b76da"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/047.ctxb",
+   "size": 32840,
+   "sha256": "5c9631d31bf005534fa44d48db4e2bc4102b6ea1807d8f1fc550d6bc7110bb0d",
+   "stock_sha256": "ea7f3399902673db4a3a74fd9e2e03cce61d9a7c37585cc259b7eff3917b8315"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/048.ctxb",
+   "size": 32840,
+   "sha256": "62eb1fd7fc114878b097cbd2c946c165d2bc11e72f51d3afd8022d336cdfc947",
+   "stock_sha256": "b005a3c84ece38f7a034d224b702d15fd11b3c861f6ed06058375fc7c89f7d1c"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/049.ctxb",
+   "size": 32840,
+   "sha256": "f7f0bd9845a5399e39250d5b5d21eb7606d77d23789d20b267d3e41fbd4fb209",
+   "stock_sha256": "7c751371bc999463d30df0ed1963ad85112d0a0e92bf8c2bdcd5511f27e9b976"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/050.ctxb",
+   "size": 32840,
+   "sha256": "a94408a63bdf69eb827238197128356146bdc1b81bb3c8c5d70f3f5c71dc0a93",
+   "stock_sha256": "666ebcc186c5fcd9335409210ed902fea316b54ec126b0bf93c457a32879276f"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/051.ctxb",
+   "size": 32840,
+   "sha256": "14851ef56e5bd52eb20386666e711594cd815905f5b1e0f838ddb38f6ad8558e",
+   "stock_sha256": "ece2adbb777528bd4d4c4cf97997707d68f41272b24c7e0e879832e06bd496c6"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/052.ctxb",
+   "size": 32840,
+   "sha256": "029cfdf480deb6c529f58125df7063c335db46204c8d3bd0084223de71badc1d",
+   "stock_sha256": "f495d69372d744ad905dad5fb88ed355bc356881b082abbc51785c358763db7e"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/053.ctxb",
+   "size": 32840,
+   "sha256": "dfd1711b41f5e8050b5030d135f7bd7674839371dd9d30f9f7622bab09c60bb8",
+   "stock_sha256": "34c510293480573fc7c70a8f9c30c52a02e91f04a8a0771bbe8d51baca8db048"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/054.ctxb",
+   "size": 32840,
+   "sha256": "960163adff6eda4164a250ab5b8b4c8d12fcdb5c5ec7480d6066814aba2cbbc9",
+   "stock_sha256": "c28fcc058a83f3344751d70ea240947cd4d229fa436b03810b509d85bbcea71e"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/055.ctxb",
+   "size": 32840,
+   "sha256": "ab7426b7df428a4115bbb65ebc4a63bdd51a4b03e7bc2a4258d36c35a3f6e76d",
+   "stock_sha256": "0156ac3540ec894187928f811210648105e8f017df7ee4ea1985c1ab02541be1"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/056.ctxb",
+   "size": 32840,
+   "sha256": "a96c645ee17e58e62992da15d597c575d520906bb4481167bdf89c27358e4a8b",
+   "stock_sha256": "de7ed78839f902d69d722aa01599f628b11a9c18c9d0e62caac5e4177cc9f5bb"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/057.ctxb",
+   "size": 32840,
+   "sha256": "bcd03b10cd388438e29819a11c47ccc70823f7445052910f0a5982555a25a600",
+   "stock_sha256": "29fc6e92794d7eb820008661823632c480a3ab4b4ae7421d1474d8395feebb20"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/058.ctxb",
+   "size": 32840,
+   "sha256": "351551339cfc4a76194f4a2c8116f8521881293e0168acdd599db94070f14e9a",
+   "stock_sha256": "54b04697ba7e8fbaffdd1765414df57de34adfeed5e6d0c71e8356fd4d488b58"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/059.ctxb",
+   "size": 32840,
+   "sha256": "8bc1d846cc1a9c07e7526d885b066e1b7f2ad08985ee8432edcdbe574e117a18",
+   "stock_sha256": "339a86cf595120a67541a714fb03d51f4472f2e9b356623ee3a96580c3e86521"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/060.ctxb",
+   "size": 32840,
+   "sha256": "727f79fd6ea49a74e1c5cb68eb63a158b9ebb0ddc8828243d96c0c64b0def904",
+   "stock_sha256": "e1cfff914c40725b44bdd310fc63851b9ee43b831eac46447198f68337a0cebc"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/061.ctxb",
+   "size": 32840,
+   "sha256": "9f8d87ebcc4f7780b62749ecee57f2901514d2a8c9dcc9a5eff7c9cd0b6b740e",
+   "stock_sha256": "5125a811397d0c8c7a7119966ba1a99c45ca158f60d5f528e82512db3dbc2b68"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/062.ctxb",
+   "size": 32840,
+   "sha256": "410c3f68dfbd7d456d181574f1a2d68cbb49a0f4d327232c5f8c4045ff1e70e6",
+   "stock_sha256": "caa3450bf06e6974b51a332bcf20a2319bb81e5f9c47f7a2b4e34f70290b29c0"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/063.ctxb",
+   "size": 32840,
+   "sha256": "dd5f495f810c2f91e14de4df48d16c50a7c3d8deb663a9c76953a53af7c6fcb0",
+   "stock_sha256": "057308ba5a3675881fd2d2bdf737f57f8127ab73cede995157c27118a7178e00"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/064.ctxb",
+   "size": 32840,
+   "sha256": "f47519bb8fccc04d7b6894321cd831119381bb442c6f7d649247e688e416eb78",
+   "stock_sha256": "907dabc5e3730c10f3c87a996afd95fa964a7fd63e5b9e6f53ed9f69df898836"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/065.ctxb",
+   "size": 32840,
+   "sha256": "3a150fd5f7214ad5555a5eafcc52912e7a3a2537a3456e87fdc50203fe3c51e7",
+   "stock_sha256": "7f073f531127effdfd78ce5d5ebf8c2c68ee31b7a33c4b3b68d560df061c86ad"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/066.ctxb",
+   "size": 32840,
+   "sha256": "64582fce6e51473526d402bd86574a8858becdea54c873fc06702ea1d4ae47c3",
+   "stock_sha256": "6bf2b3243846bb2cd201c03ace462db6e67723583ae6148524c91c15ba63f794"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/067.ctxb",
+   "size": 32840,
+   "sha256": "3c6dbbd2a7a04b71f08998df2b4d10f3578564327a0f43fde0e2e109ab0dbcc2",
+   "stock_sha256": "dcd6cfe33465a4b6270f958de099e5abcbbde9afa94b7550fbc65a665db5ac59"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/068.ctxb",
+   "size": 32840,
+   "sha256": "98ea69b5730a5a62258a241c48a7c505fbc9ede54fafb1c0102bbc3d925ec74b",
+   "stock_sha256": "1e4310b2740f876237d311526f83da114566faa07730473cfcf01a8da6be296c"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/069.ctxb",
+   "size": 32840,
+   "sha256": "704e3f7a848cd221161d92161e5ecb0815327ea2773a80f1910cdd293054344f",
+   "stock_sha256": "c5ef45b3dfc377758bf9fda10d6ef25e0fe56d37e33d0ed83e8a9b0e2180947a"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/070.ctxb",
+   "size": 32840,
+   "sha256": "2f69b2edf585a70a731d0b8042bb443385b06ded7d56c31a012c33edef19529d",
+   "stock_sha256": "49d4a767ff4d457d57d58b4498d5dcfe1bd2e38fb67f37b7c48404154657122c"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/071.ctxb",
+   "size": 32840,
+   "sha256": "e00a764c625501b0d831e8fbb64e96510561fe80271151d8e2fd8b33ad4b0a07",
+   "stock_sha256": "4ad222a7bcd1dfd680bfec3e228f98ce1e2e6a6c3fe9bf11cd4e4848401b1216"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/072.ctxb",
+   "size": 32840,
+   "sha256": "d9dcb7c633842ae1c7919ab605f1306b482ecbb26c694df168e90996b83c9400",
+   "stock_sha256": "ef574b9147383f66e86f9ffa5670b1abe07a7273b7d17e072ae9268e71ac40bb"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/073.ctxb",
+   "size": 32840,
+   "sha256": "1577aa43435b55783d31802a5c2e745b5d7711bd89e7c322c8fc1e2e5b39d4a3",
+   "stock_sha256": "c4a8c8c243b55e1e76c35a0dd6d4442403606c804e992f72974aa3e2b9f5ad8c"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/074.ctxb",
+   "size": 32840,
+   "sha256": "265b28679e8a4f4a3fec141e01a73301eda932e9e7d5f66cdf313d4aebc4c18e",
+   "stock_sha256": "540640abd2f49632dd07ca2ecf19b408617255351e1274da957c3721057ff74d"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/075.ctxb",
+   "size": 32840,
+   "sha256": "a3b6f4600e92271a6e1510cb1b08b74851114f67c4de97a7a78284f89ac71846",
+   "stock_sha256": "150b3278958a20e2d2b56f4980c7816a3ef210025278dc0a70a3db9cf7eab068"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/076.ctxb",
+   "size": 32840,
+   "sha256": "2f21b9b64c78a4be68f860bd5db6b283b41ecd137291f0b52ab58b43964c763c",
+   "stock_sha256": "bc4e1a9809c0d2cacabd60394811c45d55389047269ce8e3664d1aa7e3bd72e8"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/077.ctxb",
+   "size": 32840,
+   "sha256": "98e599fed13c9ee41d5c211404506d2d932e918f823bf1eb0f9d295d541900ee",
+   "stock_sha256": "61edb9c4fff86a69f7d4f6dfb1bbd36a7e012bf0ef9548f9a349507d2c6a96de"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/078.ctxb",
+   "size": 32840,
+   "sha256": "cde9fc0560b99e604a6e306852ae44e52538aa7851761399b877c99b43869b7a",
+   "stock_sha256": "2360743a85dd15f59a4f6c10c6491312691a29e9e8504ca6124fb5b0c2eb9bd3"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/079.ctxb",
+   "size": 32840,
+   "sha256": "fa69e60ca42c5c59761ff71103691843171e1d45d5dbc6deeca3a2f12648329a",
+   "stock_sha256": "11bdedf2dbb9ecc3216de0f9bbfbfd8f1439ca707cbbeea0a6a98d785d979556"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/080.ctxb",
+   "size": 32840,
+   "sha256": "33711a4767e984a11d633132e8fcaabcfaacb324772fecb3e0e74df05be2c7d4",
+   "stock_sha256": "b0b6d97ee02ee493ef302b80a403b00ce77f23c360ba663003b4348462a914be"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/081.ctxb",
+   "size": 32840,
+   "sha256": "71455841ad43b9b238606238ffeb86324d7395ed10f56dabdcf32a5939938269",
+   "stock_sha256": "393beb9bc3e12d8566b49a95a7ed659448b1fd819c4c526d61b142e5ac47bc39"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/082.ctxb",
+   "size": 32840,
+   "sha256": "e1759a3afb2d751aff24ad0983b2e1c9e19c32a167b867588828fa1cea2640dd",
+   "stock_sha256": "5f002be7142a752ae405e2e965670cbdf4b23e87a465f872a3cb3ee64f98eb89"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/083.ctxb",
+   "size": 32840,
+   "sha256": "cc2873195bba00e3dbcf27e381c5efaf5c550b248004fd84c1d69baa7a397443",
+   "stock_sha256": "bbc38990382dc321468529f04b32a2ccccb68c5961bc64a9804330e448857540"
+  },
+  {
+   "path": "layout/map/genbamap/EU_English/084.ctxb",
+   "size": 32840,
+   "sha256": "9b9937bc4809136a5e843b4be6cbd89c671a300ba1db41c83d411a3828cc42fe",
+   "stock_sha256": "5152d33d7e7a295ad0d2ff78289bac7bbf89b92242f788617684f191f4dadebf"
+  },
+  {
+   "path": "menu/daytelop/eu-en/daytelop_24.ctxb",
+   "size": 4168,
+   "sha256": "f6a9fafe72549d0da0c0ae88357c86746b0026d4de97e1ab3e562c223cabd6db",
+   "stock_sha256": "6f30cfc60878a27ec46dd8be0de067c2604a1df8fcf401adba78af6952e44ccb"
+  },
+  {
+   "path": "menu/daytelop/eu-en/daytelop_48.ctxb",
+   "size": 4168,
+   "sha256": "11888be33d7891634b13b28e7339286d57803e9275a73a5b25f29516c08e1207",
+   "stock_sha256": "469e0f25322c71fb5a0ca1e738012000e55f1fe50e003bedbb744e784de33e6f"
+  },
+  {
+   "path": "menu/daytelop/eu-en/daytelop_72.ctxb",
+   "size": 4168,
+   "sha256": "9700842cbcdf69059302dd857d3db5809e2f62320e9d521b9b48d5f585951a97",
+   "stock_sha256": "72d702087ed63dd302e90ed7e803d0ba0dd00472c12b57eca02047471fc322ab"
+  },
+  {
+   "path": "menu/daytelop/eu-en/daytelop_first.ctxb",
+   "size": 8264,
+   "sha256": "c583f0c8b7f7dfbea24526ceeb11df2ef3c5baba5fc1f4e406c18e8e63fdfc1a",
+   "stock_sha256": "8051959308e2f4082a6cb73dc213b77dd36bf07560a49ab878f42e565ade8771"
+  },
+  {
+   "path": "menu/daytelop/eu-en/daytelop_last.ctxb",
+   "size": 8264,
+   "sha256": "197968f28264b2304a765f5e00e20d18779aee9c435a9f5d0023bbd16b6962a8",
+   "stock_sha256": "36312b293b42907a9e26817892248af3d602b0059c60108f6d05d65f0cb867e8"
+  },
+  {
+   "path": "menu/daytelop/eu-en/daytelop_new.ctxb",
+   "size": 8264,
+   "sha256": "0ba0ea825f309f8b79d7fc64bc91e8cacd8f11fd6839f6fbfc5d4b9a4b25e029",
+   "stock_sha256": "fb0df981d524676c3d689df4485899f249c883acdb984aca7a406987939a9295"
+  },
+  {
+   "path": "menu/daytelop/eu-en/daytelop_scound.ctxb",
+   "size": 8264,
+   "sha256": "1cd2d35fef3a9035743a7499a5a341180c6db8fa7b4f72666a1d574df308ce80",
+   "stock_sha256": "4dbad18d86e3fd28ec7c56147afade5956fa2ab77074cd9323e6068cc27a8fa9"
+  },
+  {
+   "path": "menu/savedata_maintainer/eu/english/guideline_parts00.ctxb",
+   "size": 524360,
+   "sha256": "a559dd7af89599c0d26a351dc8a1907b053cc521d834cd2a73731dda23b792e7",
+   "stock_sha256": "05f950f8f334063e2fcc6da1612a7c66a03c0512709a6e2dbc11694363b0f560"
+  },
+  {
+   "path": "message/eu/eue.gmsg",
+   "size": 1089520,
+   "sha256": "28ae759f6b74f7e6a367c76f76d443b965c68a6c3ead6f154ed40ef728782276",
+   "stock_sha256": "b2a1ed10d28b553f6c133d8c9c4453f18ee0a793fa64e241ed6ffe53d4f20949"
+  },
+  {
+   "path": "message/ltn16.gzf",
+   "size": 87680,
+   "sha256": "a6fa2918437d1d9501cce9b648c2b7ac0526fb09720d3dd8b6fdb157ab6b997b",
+   "stock_sha256": "3e491a680ff61b9230bbd65fd837e6a292e7d6f1524b9d78f35e69a2a2938a9c"
+  },
+  {
+   "path": "os/patch/version.ctxb",
+   "size": 2120,
+   "sha256": "5f3dcb6d950724b68c65c0ded52c4782dab92a2f58e89173eb5e6b3ae2c9b4c3",
+   "stock_sha256": "89056c9d97660f65cb6ebcee96aaf83ac56064e26830a61cc44a6a828752f3a2"
+  }
+ ],
+ "exefs": {
+  "code.bin": {
+   "vendored": false,
+   "changed": false,
+   "stock_sha256": "6eec27b1827eab2c87744ac38066d569ffe6fe75790b1eb3300bd91f5099038d",
+   "patched_sha256": "6eec27b1827eab2c87744ac38066d569ffe6fe75790b1eb3300bd91f5099038d",
+   "note": "The RU patch leaves code.bin byte-identical (its CRC 0xffdf1ee8 is the unmodified base, verified by exefs.bpm). Stock EUR code is NCCH-compressed in the .cci; decoded here it is byte-identical to the decoded USA code, which the shipped code.bps targets. No code composition is needed for Russian text."
+  },
+  "icon.icn": {
+   "vendored": false,
+   "changed": true,
+   "note": "The RU patch restyles the exefs icon (Russian title art); the deck never shows exefs icon/banner art."
+  },
+  "banner.bnr": {
+   "vendored": false,
+   "changed": false,
+   "note": "The deck never shows exefs icon/banner art."
+  }
+ }
+}

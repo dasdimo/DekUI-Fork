@@ -46,12 +46,14 @@ object DekuiAdultLinkSetup {
     }
     fun canGenerate(c:Context)=prefs(c).contains("rom")&&org.citra.citra_emu.utils.DekuiStorage.game(c).isFile
     private class Reader(private val channel:FileChannel){
+        var titleId:Long=0L
         fun read(at:Long,n:Int):ByteArray{require(at>=0&&n in 0..64*1024*1024&&at+n<=channel.size()){"Invalid ROM range"};val b=ByteBuffer.allocate(n);while(b.hasRemaining()){val got=channel.read(b,at+b.position());check(got>0){"Could not read ROM"}};return b.array()}
         fun actor(name:String,oot:Boolean):ByteArray{
             val first=read(0,512);val base=when(String(first,0x100,4,Charsets.US_ASCII)){"NCSD"->DekuiModelConverter.u(first,0x120).toLong()*512;"NCCH"->0L;else->error("Choose a decrypted .3ds or .cci ROM (not ZIP/CIA)")}
             val header=read(base,512);check(String(header,0x100,4,Charsets.US_ASCII)=="NCCH");check(header[0x18f].toInt()and 4!=0){"This ROM is encrypted. Select your decrypted dump."}
             val id=ByteBuffer.wrap(header,0x118,8).order(ByteOrder.LITTLE_ENDIAN).long
-            check(if(oot)id in listOf(0x0004000000033500L,0x0004000000033600L,0x0004000000033400L)else id==0x0004000000125500L){if(oot)"Select an Ocarina of Time 3D ROM"else"MM3D USA ROM is required"}
+            check(if(oot)id in listOf(0x0004000000033500L,0x0004000000033600L,0x0004000000033400L)else TitleIds.isMajoraMask3D(id)){if(oot)"Select an Ocarina of Time 3D ROM"else"MM3D USA or Europe Rev 1 ROM is required"}
+            if(!oot)titleId=id
             val romfs=base+DekuiModelConverter.u(header,0x1b0).toLong()*512+0x1000
             val h=read(romfs,40);check(DekuiModelConverter.u(h,0)==40)
             val dirs=read(romfs+DekuiModelConverter.u(h,12),DekuiModelConverter.u(h,16));val files=read(romfs+DekuiModelConverter.u(h,28),DekuiModelConverter.u(h,32))
@@ -114,7 +116,9 @@ object DekuiAdultLinkSetup {
         val actor=c.contentResolver.openFileDescriptor(uri,"r")?.use{fd->FileInputStream(fd.fileDescriptor).use{Reader(it.channel).actor(if(dark)"actor/zelda_torch2.zar"else"actor/zelda_link_boy_new.zar",true)}}?:error("Cannot read the selected ROM")
         val es=DekuiModelConverter.entries(actor);val adult=es.firstOrNull{it.name==(if(dark)"Model/darklink.cmb"else"boy/model/link_v2.cmb")}?.bytes?:error("$modelName model is missing")
         val body=if(dark)byteArrayOf()else es.firstOrNull{it.name=="boy/misc/link_body.cmab"}?.bytes?:error("Original tunic colors are missing")
-        val native=FileInputStream(org.citra.citra_emu.utils.DekuiStorage.game(c)).use{Reader(it.channel).actor("actors/zelda2_link_child_new.gar.lzs",false)}
+        var mm3dTitle:Long?=null
+        val native=FileInputStream(org.citra.citra_emu.utils.DekuiStorage.game(c)).use{val reader=Reader(it.channel);val bytes=reader.actor("actors/zelda2_link_child_new.gar.lzs",false);mm3dTitle=reader.titleId;bytes}
+        val titleKey=TitleIds.path(mm3dTitle?:error("Select your Majora's Mask 3D ROM again"))
         val root=java.io.File(org.citra.citra_emu.utils.DekuiStorage.root(c),"load/mm3d-models/$modelId");val stage=File(root.parentFile,".$modelId-${java.util.UUID.randomUUID()}");check(stage.mkdirs())
         try{
             progress("Reading the Master Sword HUD icon from your OoT3D ROM…")
@@ -148,7 +152,7 @@ object DekuiAdultLinkSetup {
                     val bitmap=c.contentResolver.openInputStream(iconSource)?.use{android.graphics.BitmapFactory.decodeStream(it,null,options)}?:error("Cannot decode the HD item icons")
                     try{writeSwordIcon(stage,bitmap);copied++}finally{bitmap.recycle()}
                 }
-                val textureRoot=java.io.File(org.citra.citra_emu.utils.DekuiStorage.root(c),"load/textures/0004000000125500");val textureStage=File(stage,"texture-overrides");val unique=mutableSetOf<String>()
+                val textureRoot=java.io.File(org.citra.citra_emu.utils.DekuiStorage.root(c),"load/textures/"+titleKey);val textureStage=File(stage,"texture-overrides");val unique=mutableSetOf<String>()
                 for(t in allTextures){val hashes=NativeLibrary.dekuiTextureHashes(t.raw,t.width,t.height,t.format);check(hashes.size==2);val names=hashes.map{java.lang.Long.toUnsignedString(it,16).uppercase().padStart(16,'0')};if(!unique.add(names[0]))continue
                     val source=index[names[1]]?:index[names[0]]?:continue;val extension=DocumentFile.fromSingleUri(c,source)?.name?.substringAfterLast('.')?.lowercase()?:"png"
                     val bytes=c.contentResolver.openInputStream(source)?.use{input->
@@ -169,7 +173,7 @@ object DekuiAdultLinkSetup {
             if(!stage.renameTo(root)){if(backup.exists())backup.renameTo(root);error("Could not install generated models")}
             val generatedTextures=File(root,"texture-overrides")
             if(generatedTextures.isDirectory) {
-                val textureRoot=java.io.File(org.citra.citra_emu.utils.DekuiStorage.root(c),"load/textures/0004000000125500");val target=File(textureRoot,"$modelId-generated");textureRoot.mkdirs()
+                val textureRoot=java.io.File(org.citra.citra_emu.utils.DekuiStorage.root(c),"load/textures/"+titleKey);val target=File(textureRoot,"$modelId-generated");textureRoot.mkdirs()
                 val oldTextures=File(textureRoot,".$modelId-backup-${System.currentTimeMillis()}")
                 if(target.exists())check(target.renameTo(oldTextures)){"Could not back up generated textures"}
                 if(!generatedTextures.renameTo(target)){if(oldTextures.exists())oldTextures.renameTo(target);error("Could not install generated textures")}

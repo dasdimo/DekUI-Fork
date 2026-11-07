@@ -1,0 +1,202 @@
+{
+  "rewrites": {
+    "2716": [
+      {
+        "source_hash": "f57c8a57b66bdc15",
+        "length": 5,
+        "text": "рупии"
+      }
+    ],
+    "0477": [
+      {
+        "source_hash": "f5811957b670b7e9",
+        "length": 5,
+        "text": "рупий"
+      }
+    ],
+    "0656": [
+      {
+        "source_hash": "778abccbb824c18c",
+        "length": 23,
+        "text": "Большая сумка:"
+      }
+    ],
+    "0657": [
+      {
+        "source_hash": "778abccbb824c18c",
+        "length": 23,
+        "text": "Большая сумка:"
+      }
+    ]
+  },
+  "shorten": {
+    "0654": [
+      {
+        "source_hash": "f6f8948e1deff29a",
+        "length": 27,
+        "text": "Сумка для хранения бомб"
+      }
+    ],
+    "0655": [
+      {
+        "source_hash": "5c6baba5bf1d54ca",
+        "length": 12,
+        "text": "Нет"
+      }
+    ],
+    "066f": [
+      {
+        "source_hash": "d646607ef53a1fa9",
+        "length": 12,
+        "text": "Купишь "
+      }
+    ],
+    "0678": [
+      {
+        "source_hash": "a91638325baa062d",
+        "length": 22,
+        "text": "Стань"
+      }
+    ],
+    "0679": [
+      {
+        "source_hash": "6bfcd9d2ab7f3587",
+        "length": 16,
+        "text": "Если нет "
+      }
+    ],
+    "067a": [
+      {
+        "source_hash": "6bfcd9d2ab7f3587",
+        "length": 16,
+        "text": "Если нет "
+      }
+    ],
+    "06b6": [
+      {
+        "source_hash": "f5676bb32f5d5537",
+        "length": 28,
+        "text": "Когда кончатся сердца, она"
+      }
+    ],
+    "06b7": [
+      {
+        "source_hash": "c9162eb9d9a5403c",
+        "length": 13,
+        "text": "Нет"
+      }
+    ],
+    "06d3": [
+      {
+        "source_hash": "ce5d5fe1ed03ec4d",
+        "length": 31,
+        "text": "Она тебе, типа, поможет,"
+      }
+    ],
+    "06d4": [
+      {
+        "source_hash": "2e8883ebc5fd3afe",
+        "length": 7,
+        "text": "Нет"
+      }
+    ],
+    "085b": [
+      {
+        "source_hash": "412731589401f40f",
+        "length": 16,
+        "text": "Взрослым: "
+      }
+    ],
+    "085d": [
+      {
+        "source_hash": "a9feba7d22703927",
+        "length": 16,
+        "text": "билет. С тебя "
+      }
+    ],
+    "3466": [
+      {
+        "source_hash": "a47cab79e8a4e54b",
+        "length": 7,
+        "text": "Нет"
+      }
+    ],
+    "3490": [
+      {
+        "source_hash": "963e766ce8057c77",
+        "length": 7,
+        "text": "Нет"
+      }
+    ],
+    "59d8": [
+      {
+        "source_hash": "b52cb94008d7f41b",
+        "length": 26,
+        "text": "Пришёл порыбачить?"
+      }
+    ],
+    "59da": [
+      {
+        "source_hash": "7dfba7c51f834ccb",
+        "length": 15,
+        "text": "Плати "
+      }
+    ],
+    "1612": [
+      {
+        "source_hash": "9f758104f0599dba",
+        "length": 14,
+        "text": "Продам "
+      }
+    ],
+    "1617": [
+      {
+        "source_hash": "b0ba27bb0561702a",
+        "length": 16,
+        "text": "П-продам "
+      }
+    ],
+    "1d11": [
+      {
+        "source_hash": "5158e6b8366d9cff",
+        "length": 14,
+        "text": "Не надо"
+      }
+    ],
+    "1d12": [
+      {
+        "source_hash": "5158e6b8366d9cff",
+        "length": 14,
+        "text": "Не надо"
+      }
+    ],
+    "1d13": [
+      {
+        "source_hash": "5158e6b8366d9cff",
+        "length": 14,
+        "text": "Не надо"
+      }
+    ],
+    "1d14": [
+      {
+        "source_hash": "5158e6b8366d9cff",
+        "length": 14,
+        "text": "Не надо"
+      }
+    ],
+    "1d15": [
+      {
+        "source_hash": "5158e6b8366d9cff",
+        "length": 14,
+        "text": "Не надо"
+      }
+    ],
+    "1d16": [
+      {
+        "source_hash": "5158e6b8366d9cff",
+        "length": 14,
+        "text": "Не надо"
+      }
+    ]
+  }
+}

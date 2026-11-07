@@ -10,6 +10,7 @@
 #include <QSaveFile>
 #include "common/file_util.h"
 #include "mm3d/qt_user_path.h"
+#include "mm3d/mods_location.h"
 
 namespace MM3D::SubmenuHeader {
 struct Options {
@@ -64,8 +65,9 @@ inline QString Patch(QByteArray& current,const QByteArray& baseline,const Option
     return {};
 }
 inline QString Install(const Options& o) {
-    const QString path=QtUserPath(FileUtil::UserPath::LoadDir)+
-        "mods/0004000000125500/romfs/layout/Joker.Main.gar";
+    const auto load=QtUserPath(FileUtil::UserPath::LoadDir);
+    const QString path=load+"mods/"+ModsLocation::InstalledTitleId(load,"romfs/layout/Joker.Main.gar")+
+        "/romfs/layout/Joker.Main.gar";
     QFile source(path+".mm3d-header-source"), live(path);
     if(!source.open(QIODevice::ReadOnly) || !live.open(QIODevice::ReadOnly))
         return "Header archive or source backup missing; no layout written.";

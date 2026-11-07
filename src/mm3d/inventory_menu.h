@@ -12,6 +12,7 @@
 #include "mm3d/items_map_prompt.h"
 #include "mm3d/menu_tabs.h"
 #include "mm3d/menu_help.h"
+#include "mm3d/mods_location.h"
 
 namespace MM3D::InventoryMenu {
 struct Options {
@@ -74,8 +75,9 @@ inline void Apply(const Options& o) {
 }
 // Undo only the four widgets edited by the old experiment; preserve other mods.
 inline QString RestoreLegacy() {
-    const QString path=QtUserPath(FileUtil::UserPath::LoadDir)+
-        "mods/0004000000125500/romfs/layout/Joker.Main.Play.SubMenu.gar";
+    const auto load=QtUserPath(FileUtil::UserPath::LoadDir);
+    const QString path=load+"mods/"+ModsLocation::InstalledTitleId(load,"romfs/layout/Joker.Main.Play.SubMenu.gar")+
+        "/romfs/layout/Joker.Main.Play.SubMenu.gar";
     if(!QFileInfo::exists(path+".mm3d-inventory-source") || !QFileInfo::exists(path)) return {};
     QFile base(path+".mm3d-inventory-source"),live(path);
     if(!base.open(QIODevice::ReadOnly)||!live.open(QIODevice::ReadOnly)) return "Cannot restore the previous inventory experiment.";

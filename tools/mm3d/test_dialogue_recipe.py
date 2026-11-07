@@ -76,7 +76,7 @@ class DialogueRecipes(unittest.TestCase):
                 if match[2] == match[4]:
                     self.assertEqual(match[1], match[3], name)
                     self.assertEqual(encoded, b'', name)
-        self.assertEqual(count, 2207)
+        self.assertEqual(count, 2828)
 
     def test_rejects_unsupported_allocations(self):
         for source, edited in ((b'', b'x'), (b'x'*4097, b'x'), (b'x', b'x'*4097)):

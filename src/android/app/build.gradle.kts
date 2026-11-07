@@ -53,6 +53,7 @@ val stageDekuiSetup by tasks.registering(Sync::class) {
     from("../../../resources/mm3d") {
         include("supported-rom.json", "android-layout-recipe.json", "setup-fingerprints.json")
         include("project-restoration/**")
+        include("rus/**")
     }
     into(layout.buildDirectory.dir("generated/dekuiAssets/dekui-setup"))
 }

@@ -20,6 +20,7 @@
 #include "common/param_package.h"
 #include "common/settings.h"
 #include "mm3d/desktop_storage.h"
+#include "mm3d/title_ids.h"
 
 namespace {
 void Check(bool ok, const char* message) {
@@ -125,7 +126,7 @@ int main(int argc, char** argv) {
             saved.setValue(QStringLiteral("UI/Paths/gamedirs/999/path"), QStringLiteral("stale"));
             saved.setValue(QStringLiteral("UI/GameList/favorites/size"), 1);
             saved.setValue(QStringLiteral("UI/GameList/favorites/1/program_id"),
-                           qulonglong{0x125500});
+                           static_cast<qulonglong>(MM3D::MajoraMask3DUsaTitle));
             for (int button : {0, 1, 0, 1}) {
                 const auto key = QStringLiteral("Controls/profiles/1/button_a");
                 const auto binding =
@@ -223,6 +224,13 @@ int main(int argc, char** argv) {
 
         const QString old = root + QStringLiteral("/user/load/mm3d-models/dark-link/previous.txt"),
                       save = root + QStringLiteral("/user/save/sentinel");
+        // Finalize resolves the title-keyed texture directory from the Setup
+        // record; both supported titles must be exercised.
+        const QString usa = QStringLiteral("%1").arg(MM3D::MajoraMask3DUsaTitle,16,16,QLatin1Char('0'));
+        const QString eur = QStringLiteral("%1").arg(MM3D::MajoraMask3DEurTitle,16,16,QLatin1Char('0'));
+        Write(root + QStringLiteral("/user/setup/ready.json"),
+              QJsonDocument(QJsonObject{{QStringLiteral("version"), 1},
+                                        {QStringLiteral("title_id"), usa}}).toJson());
         Write(old, "old-model");
         Write(save, "save-data");
         const QByteArray raw(128, '\x7f');
@@ -246,16 +254,15 @@ int main(int argc, char** argv) {
         std::filesystem::create_directory_symlink(
             std::filesystem::path(external.toStdString()),
             std::filesystem::path(
-                (root + QStringLiteral("/user/load/textures/0004000000125500")).toStdString()));
+                (root + QStringLiteral("/user/load/textures/") + usa).toStdString()));
 #else
-        QDir().mkpath(root + QStringLiteral("/user/load/textures/0004000000125500"));
+        QDir().mkpath(root + QStringLiteral("/user/load/textures/") + usa);
 #endif
         Stage(root, QStringLiteral(".dark-link-test"));
         MM3D::DesktopImport::Finalize(
             root + QStringLiteral("/user/load/mm3d-models/.dark-link-test"), root, pack, true);
-        Check(QFileInfo::exists(root +
-                                QStringLiteral("/user/load/mm3d-model-textures/0004000000125500/"
-                                               "dark-link-generated/tex1_8x8_") +
+        Check(QFileInfo::exists(root + QStringLiteral("/user/load/mm3d-model-textures/") + usa +
+                                QStringLiteral("/dark-link-generated/tex1_8x8_") +
                                 hash + QStringLiteral("_3_mip0.png")),
               "matching HD texture missing");
         Check(QFileInfo::exists(save), "save replaced");
@@ -321,9 +328,8 @@ int main(int argc, char** argv) {
             large.save(pack + QStringLiteral("/Characters/Link/tex1_8x8_0123456789abcdef_14.png")),
             "large TP fixture");
         MM3D::DesktopImport::Finalize(tpStage, root, pack, false, true);
-        const auto tpTextures =
-            root + QStringLiteral(
-                       "/user/load/mm3d-model-textures/0004000000125500/twilight-link-generated");
+        const auto tpTextures = root + QStringLiteral("/user/load/mm3d-model-textures/") + usa +
+                                QStringLiteral("/twilight-link-generated");
         const auto files = QDir(tpTextures).entryList({QStringLiteral("*.png")}, QDir::Files);
         Check(!files.empty(), "nested TP replacement was not installed");
         const QImage imported(tpTextures + QStringLiteral("/") + files.front());
@@ -334,6 +340,19 @@ int main(int argc, char** argv) {
         Check(QFileInfo::exists(root +
                                 QStringLiteral("/user/load/mm3d-models/dark-link/generated.json")),
               "TP generation damaged another mod");
+        // The Europe Rev 1 title keys generated textures under its own title id.
+        Write(root + QStringLiteral("/user/setup/ready.json"),
+              QJsonDocument(QJsonObject{{QStringLiteral("version"), 1},
+                                        {QStringLiteral("title_id"), eur}}).toJson());
+        QDir().mkpath(root + QStringLiteral("/user/load/textures/") + eur);
+        Stage(root, QStringLiteral(".dark-link-eur"));
+        MM3D::DesktopImport::Finalize(
+            root + QStringLiteral("/user/load/mm3d-models/.dark-link-eur"), root, pack, true);
+        Check(QFileInfo::exists(root + QStringLiteral("/user/load/mm3d-model-textures/") + eur +
+                                QStringLiteral("/dark-link-generated/tex1_8x8_") +
+                                hash + QStringLiteral("_3_mip0.png")),
+              "Europe title HD texture missing");
+        Check(QFileInfo::exists(save), "Europe generation damaged save");
         std::cout << "Desktop texture import, backup, settings and failure preservation passed\n";
         return 0;
     } catch (const std::exception& error) {

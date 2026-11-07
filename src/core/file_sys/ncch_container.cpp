@@ -22,6 +22,7 @@
 #ifdef ENABLE_MM3D_PRESENTATION
 #include "mm3d/model_mod.h"
 #include "mm3d/sword_icon.h"
+#include "mm3d/title_ids.h"
 #include "core/frontend/image_interface.h"
 #endif
 
@@ -644,7 +645,7 @@ Loader::ResultStatus NCCHContainer::ReadRomFS(std::shared_ptr<RomFSReader>& romf
 #ifdef ENABLE_MM3D_PRESENTATION
     // Keep optional appearance assets outside the normal mods tree. Disabling the
     // option restores the unmodified human model on the next game launch.
-    if (GetModId(ncch_header.program_id) == 0x0004000000125500ULL) {
+    if (MM3D::IsMajoraMask3DTitle(GetModId(ncch_header.program_id))) {
         MM3D::ModelMod::adult_active.store(false);
         MM3D::TunicColor::selected.store(0);
         MM3D::SwordIcon::Store(std::shared_ptr<const MM3D::SwordIcon::Image>{});

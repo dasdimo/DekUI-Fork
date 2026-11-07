@@ -35,7 +35,8 @@ APPIMAGE_EXTRACT_AND_RUN=1 ./Majora-ReMasked.AppImage
 
 Optional custom textures: use F1 > Graphics > Open texture folder, install a
 compatible pack, enable Use custom textures, then restart Dekui. The folder is
-user/load/textures/0004000000125500/. Texture packs are not included.
+user/load/textures/<title id>/ (0004000000125500 for USA, 0004000000125600
+for Europe). Texture packs are not included.
 
 Project Restoration includes its license and matching source under
 resources/mm3d/project-restoration. Game files are not included. Source and

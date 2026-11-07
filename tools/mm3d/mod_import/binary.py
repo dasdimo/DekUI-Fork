@@ -65,7 +65,7 @@ class Reader:
         ncch=u(header,0x120)*512 if header[0x100:0x104]==b'NCSD' else 0;part=self.read(ncch,512)
         require(part[0x100:0x104]==b'NCCH' and (part[0x18f]&4),'ROM must be decrypted')
         title=int.from_bytes(part[0x118:0x120],'little')
-        require(title in (0x0004000000033500,0x0004000000033600,0x0004000000033400) if oot else title==0x0004000000125500,'Select the appropriate OoT3D or MM3D ROM')
+        require(title in (0x0004000000033500,0x0004000000033600,0x0004000000033400) if oot else title in (0x0004000000125500,0x0004000000125600),'Select the appropriate OoT3D or MM3D ROM')
         fs=ncch+u(part,0x1b0)*512;ivfc=self.read(fs,96);require(ivfc[:4]==b'IVFC')
         level=fs+0x1000;hdr=self.read(level,40);require(u(hdr,0)==40)
         # Level 3 begins at the first 4 KiB boundary after the IVFC header/master hash.

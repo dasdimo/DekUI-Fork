@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "mm3d/classic_saving.h"
 #include "mm3d/classic_save_store.h"
+#include "mm3d/title_ids.h"
 #include <array>
 #include <QFileInfo>
 #include <mutex>
@@ -48,7 +49,12 @@ void RegisterPath(const std::string& path) {
     // Exact title and slot; other games/system archives are never touched.
     const auto full=QDir::fromNativeSeparators(QString::fromStdString(path));
     for(unsigned slot=0;slot<3;++slot) {
-        if (!full.endsWith(QString("/title/00040000/00125500/data/00000001/save%1.bin").arg(slot))) continue;
+        bool title_matches=false;
+        for(const std::uint64_t title:{MajoraMask3DUsaTitle,MajoraMask3DEurTitle})
+            if(full.endsWith(QStringLiteral("/title/00040000/%1/data/00000001/save%2.bin")
+                                 .arg(QString::number(title&0xffffffffULL,16).rightJustified(8,'0'),QString::number(slot))))
+                title_matches=true;
+        if(!title_matches) continue;
         std::scoped_lock lock(mutex); paths[slot]=full;marker_checked={};
         Trace("path slot="+std::to_string(slot)+" "+full.toStdString());
     }

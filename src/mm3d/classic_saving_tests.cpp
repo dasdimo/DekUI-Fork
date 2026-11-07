@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "classic_saving.h"
 #include "classic_save_store.h"
+#include "mm3d/title_ids.h"
 #include <QTemporaryDir>
 #include <cstdlib>
 #include <iostream>
@@ -26,7 +27,8 @@ int main() {
     resume_notice=false;resume_text_active=false;
     enabled=true;
     QTemporaryDir temp;Require(temp.isValid(),"temp");
-    const QString dir=temp.path()+"/title/00040000/00125500/data/00000001";
+    const QString dir=temp.path()+"/title/00040000/"+
+        QString::number(MM3D::MajoraMask3DUsaTitle&0xffffffffULL,16).rightJustified(8,'0')+"/data/00000001";
     Require(QDir().mkpath(dir),"directory");const QString file=dir+"/save0.bin";
     const auto cycle=Snapshot(false,'C'),owl=Snapshot(true,'O');
     Write(file,cycle);RegisterPath(file.toStdString());
@@ -57,5 +59,13 @@ int main() {
     // A failed read/copy may leave old CommonData. A mismatch cannot consume.
     Require(Resume(0,span(cycle))&&Read(file)==owl,"load byte mismatch preserves owl");
     Require(!resume_notice,"mismatch does not arm notice");
+    // The Europe Rev 1 title stores the same layout under its own title directory.
+    const QString eur_dir=temp.path()+"/title/00040000/"+
+        QString::number(MM3D::MajoraMask3DEurTitle&0xffffffffULL,16).rightJustified(8,'0')+"/data/00000001";
+    Require(QDir().mkpath(eur_dir),"EUR directory");
+    Write(eur_dir+"/save1.bin",replacement);RegisterPath((eur_dir+"/save1.bin").toStdString());
+    Require(BeginWrite(1,Kind::Cycle),"Europe title save path registers");
+    RegisterPath((temp.path()+"/title/00040000/00125700/data/00000001/save2.bin").toStdString());
+    Require(!BeginWrite(2,Kind::Cycle),"unsupported title is not registered");
     std::cout<<"Classic native-file coordinator: cycle, owl, consume, repeated resume, copy/erase identity and CRC checks passed.\n";
 }

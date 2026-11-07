@@ -24,11 +24,26 @@
         "source_dir": "romfs/message/eu",
         "names": ["eue"],
         "hashes": {
-          "eue": "fbb1a16e57586f99a64bb82a66969982e2dd41f10e9bca7a3f2c0eda1050c1f3"
+          "eue": "bd613025de1a45d073d2d71207dd042159b336381534d6269e9e7669e00f9d71"
         },
         "text": {
           "english": {"name": "eue", "language": 16},
           "localized": []
+        }
+      },
+      "rus": {
+        "manifest": "rus/manifest.json",
+        "messages": {
+          "source_dir": "romfs/message/eu",
+          "names": ["eue"],
+          "hashes": {
+            "eue": "57288795366066f61077540e75bf2992a8b88532e59c07e90f6ef28a2b0d1252"
+          },
+          "prompt_fnv": "0xdd6489f7c68ef87e",
+          "text": {
+            "english": null,
+            "localized": ["eue"]
+          }
         }
       }
     }

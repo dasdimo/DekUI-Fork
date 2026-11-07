@@ -156,7 +156,7 @@ class Reader:
             (
                 title in (0x0004000000033500, 0x0004000000033600, 0x0004000000033400)
                 if oot
-                else title == 0x0004000000125500
+                else title in (0x0004000000125500, 0x0004000000125600)
             ),
             "Select the appropriate OoT3D or MM3D ROM",
         )

@@ -21,10 +21,16 @@ object DekuiGameSetup {
         return result
     }
     fun prepare(context: Context, rom: File, root: File) {
-        val expected = json(context, "supported-rom.json")
+        val roms = json(context, "supported-rom.json").getJSONArray("roms")
+        require(roms.length() > 0) { "Invalid supported-rom.json" }
         val recipe = json(context, "android-layout-recipe.json")
         val inputs = recipe.getJSONObject("inputs")
         val sources = mutableMapOf<String, ByteArray>()
+        var titleKey: String? = null
+        var sourceDir = ""
+        var archiveNames = listOf<String>()
+        var messages = JSONObject()
+        var rusBlock: JSONObject? = null
         RandomAccessFile(rom, "r").use { stream ->
             fun read(at: Long, count: Int): ByteArray {
                 require(at >= 0 && count >= 0 && at <= stream.length() - count) { "Truncated game file" }
@@ -34,7 +40,7 @@ object DekuiGameSetup {
             require(String(read(0x100,4), Charsets.US_ASCII) == "NCSD") { "Select a decrypted .cci or .3ds game" }
             val base = u32(0x120) * 512
             val length = u32(0x124) * 512
-            require(base >= 512 && length == expected.getLong("main_partition_bytes")) { "Unsupported game revision" }
+            require(base >= 512) { "Unsupported game revision" }
             require(String(read(base + 0x100,4), Charsets.US_ASCII) == "NCCH") { "Invalid game partition" }
             require(read(base + 0x18f,1)[0].toInt() and 4 != 0) { "The selected game must be decrypted" }
             val digest = MessageDigest.getInstance("SHA-256")
@@ -43,8 +49,32 @@ object DekuiGameSetup {
                 val bytes = read(base + offset, minOf(1024 * 1024L, length - offset).toInt())
                 digest.update(bytes); offset += bytes.size
             }
-            require(digest.digest().joinToString("") { "%02x".format(it.toInt() and 255) } ==
-                expected.getString("main_partition_sha256")) { "Unsupported game: select the decrypted USA Rev 1 version" }
+            val partitionHash = digest.digest().joinToString("") { "%02x".format(it.toInt() and 255) }
+            for (i in 0 until roms.length()) {
+                val profile = roms.getJSONObject(i)
+                if (length != profile.getLong("main_partition_bytes") ||
+                    partitionHash != profile.getString("main_partition_sha256")) continue
+                val programId = ByteBuffer.wrap(read(base + 0x118, 8)).order(ByteOrder.LITTLE_ENDIAN).long
+                val remaster = ByteBuffer.wrap(read(base + 0x20e, 2)).order(ByteOrder.LITTLE_ENDIAN)
+                    .short.toInt() and 0xffff
+                require(String.format("%016x", programId) == profile.getString("title_id") &&
+                    remaster == profile.getInt("remaster_version")) { "Unsupported game revision" }
+                titleKey = profile.getString("title_id")
+                break
+            }
+            require(titleKey != null) {
+                "Unsupported game: select the decrypted USA or Europe (En,Fr,De,Es,It) Rev 1 version"
+            }
+            // The message archives and their expected reconstructions come from
+            // the shipped profile for the title that was just identified. The
+            // Europe profile's Russian block overrides the base when present.
+            val title = json(context, "setup-fingerprints.json")
+                .getJSONObject("titles").getJSONObject(titleKey!!)
+            rusBlock = title.optJSONObject("rus")
+            messages = rusBlock?.getJSONObject("messages") ?: title.getJSONObject("messages")
+            sourceDir = messages.getString("source_dir")
+            archiveNames = (0 until messages.getJSONArray("names").length())
+                .map { messages.getJSONArray("names").getString(it) }
             val start = base + u32(base + 0x1b0) * 512 + 0x1000
             val romfsLength = u32(base + 0x1b4) * 512 - 0x1000
             fun rr(at: Long, count: Int): ByteArray {
@@ -57,7 +87,7 @@ object DekuiGameSetup {
             val dt = header.getInt(12).toLong(); val ft = header.getInt(28).toLong()
             val payload = header.getInt(36).toLong()
             val wanted = inputs.keys().asSequence().filter { it.startsWith("original/") }.toSet() +
-                listOf("use", "usf", "uss").map { "original/romfs/message/us/$it.gmsg" }
+                archiveNames.map { "original/$sourceDir/$it.gmsg" }
             val visited = mutableSetOf<Long>()
             fun directory(at: Long, parent: String, depth: Int): Long {
                 require(depth <= 32 && visited.add(at)) { "Invalid directory tree" }
@@ -87,6 +117,25 @@ object DekuiGameSetup {
             directory(0,"",0)
             require(sources.keys == wanted) { "Required game layouts missing" }
         }
+        // The Europe title's Russian overlay: every vendored file is verified
+        // against its manifest; the RU message archive becomes the base the
+        // expansion runs on, and the remaining files install as plain copies.
+        val rusFiles = mutableMapOf<String, ByteArray>()
+        if (rusBlock != null) {
+            val entries = json(context, rusBlock.getString("manifest")).getJSONArray("files")
+            for (i in 0 until entries.length()) {
+                val entry = entries.getJSONObject(i)
+                val path = entry.getString("path")
+                val bytes = context.assets.open("dekui-setup/" + rusBlock.getString("manifest").substringBeforeLast('/') + "/" + path)
+                    .use { it.readBytes() }
+                require(bytes.size == entry.getInt("size") && hash(bytes) == entry.getString("sha256")) {
+                    "Russian overlay content drifted from its manifest: $path"
+                }
+                rusFiles[path] = bytes
+            }
+            val baseDir = sourceDir.removePrefix("romfs/") + "/"
+            for ((path, bytes) in rusFiles) if (path.startsWith(baseDir)) sources["original/romfs/$path"] = bytes
+        }
         for (key in inputs.keys()) {
             if (key.startsWith("restoration/")) sources[key] = context.assets
                 .open("dekui-setup/project-restoration/" + key.removePrefix("restoration/"))
@@ -115,12 +164,9 @@ object DekuiGameSetup {
                 val target = mods.child(item.getString("output")); target.parentFile!!.mkdirs(); target.writeBytes(output)
             }
             // Expand message storage from the verified user ROM, never from bundled game data.
-            val messageHashes = mapOf(
-                "use" to "70bd72f961a6ff168604249b4c76f893f1cad6fbd9da0290e85f49cd319a1314",
-                "usf" to "b848188634a5bf6c9f2cd837102420dbe0a3275d7fd17bbe0057e8dcbd173a77",
-                "uss" to "3310a03cf6d67a4ce7c054d7fff2b31fd309fcf966e91610f83ffdd92281a688")
-            for ((name, expectedHash) in messageHashes) {
-                var data = sources.getValue("original/romfs/message/us/$name.gmsg")
+            val englishArchive = messages.getJSONObject("text").getJSONObject("english").getString("name")
+            for (name in archiveNames) {
+                var data = sources.getValue("original/$sourceDir/$name.gmsg")
                 fun expand(id: Int, capacity: Int) {
                     val table = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN)
                     require(String(data.copyOfRange(0, 4), Charsets.US_ASCII) == "GMSG")
@@ -137,23 +183,35 @@ object DekuiGameSetup {
                     }
                     data = output
                 }
-                expand(0x0c01, if (name == "use") 1024 else 1536)
-                if (name != "use") expand(0x1b8a, 128)
-                require(hash(data) == expectedHash) { "Message reconstruction mismatch: $name" }
-                val output = File(stage, "mods/romfs/message/us/$name.gmsg")
+                // The English archive only gets the owl prompt expansion;
+                // localized archives also expand the return prompt.
+                if (name == englishArchive) expand(0x0c01, 1024)
+                else { expand(0x0c01, 1536); expand(0x1b8a, 128) }
+                require(hash(data) == messages.getJSONObject("hashes").getString(name)) { "Message reconstruction mismatch: $name" }
+                val output = File(stage, "mods/$sourceDir/$name.gmsg")
                 output.parentFile!!.mkdirs(); output.writeBytes(data)
             }
-            val target = File(root,"load/mods/0004000000125500")
+            // Plain mod copies of the remaining RU romfs files; generated
+            // output wins (the expanded eue.gmsg was built from these bytes).
+            for ((path, bytes) in rusFiles) {
+                val file = mods.child("romfs/$path")
+                if (!file.isFile) { file.parentFile!!.mkdirs(); file.writeBytes(bytes) }
+            }
+            val target = File(root,"load/mods/" + titleKey!!)
             // Retain an existing installation, including the user's edited layouts.
             if (!target.exists()) {
                 target.parentFile!!.mkdirs(); check(mods.renameTo(target))
             } else {
-                for (name in messageHashes.keys) {
-                    val existing = target.child("romfs/message/us/$name.gmsg")
+                for (name in archiveNames) {
+                    val existing = target.child("$sourceDir/$name.gmsg")
                     if (!existing.isFile) {
                         existing.parentFile!!.mkdirs()
-                        File(stage, "mods/romfs/message/us/$name.gmsg").copyTo(existing)
+                        File(stage, "mods/$sourceDir/$name.gmsg").copyTo(existing)
                     }
+                }
+                for ((path, bytes) in rusFiles) {
+                    val existing = target.child("romfs/$path")
+                    if (!existing.isFile) { existing.parentFile!!.mkdirs(); existing.writeBytes(bytes) }
                 }
 
                 for (i in 0 until files.length()) {

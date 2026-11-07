@@ -5,7 +5,6 @@ import json
 from pathlib import Path
 from upgrade_game_resources import atomic_write, checked
 
-ARCHIVE = 'load/mods/0004000000125500/romfs/layout/Joker.Main.New.gar'
 CONFIG = 'config/mm3d-local/presentation.json'
 
 def digest(data):
@@ -44,13 +43,23 @@ def reconstruct(source, spec):
         raise ValueError('HUD output checksum mismatch')
     return bytes(output)
 
+def installed_title(user):
+    # The installed tree carries exactly one supported game directory.
+    mods = user / 'load/mods'
+    titles = sorted(p.name for p in mods.iterdir() if p.is_dir()) if mods.is_dir() else []
+    if len(titles) != 1 or titles[0] not in ('0004000000125500', '0004000000125600'):
+        raise ValueError('Expected one supported installed game under load/mods')
+    return titles[0]
+
+
 def apply(user, resources):
     spec = json.loads((resources/'desktop-hud/layout.json').read_bytes())
     atlas_spec = json.loads((resources/'desktop-hud/upgrade.json').read_bytes())
     texture = (resources/'desktop-hud'/atlas_spec['texture']).read_bytes()
     if digest(texture) != atlas_spec['texture_sha256']:
         raise ValueError('Android HUD atlas checksum mismatch')
-    archive = checked(user, ARCHIVE)
+    title = installed_title(user)
+    archive = checked(user, f'load/mods/{title}/romfs/layout/Joker.Main.New.gar')
     source = archive.read_bytes()
     try:
         updated = reconstruct(source, spec)
@@ -60,7 +69,7 @@ def apply(user, resources):
             return  # Never replace another user's authored archive.
         raise
     play_spec = json.loads((resources/'desktop-hud/play.json').read_bytes())
-    play = checked(user, 'load/mods/0004000000125500/romfs/layout/Joker.Main.Play.gar')
+    play = checked(user, f'load/mods/{title}/romfs/layout/Joker.Main.Play.gar')
     play_original = play.read_bytes()
     play_updated = reconstruct(play_original, play_spec)
     config = checked(user, CONFIG)
@@ -78,10 +87,10 @@ def apply(user, resources):
         saved = checked(user, backup+'.json')
         if not saved.exists(): atomic_write(saved, raw)
     # Every byte is checked before publishing; a retry safely completes any partial update.
-    texture_target = checked(user, 'load/mm3d-model-textures/0004000000125500/hud/'+atlas_spec['texture'])
+    texture_target = checked(user, f'load/mm3d-model-textures/{title}/hud/'+atlas_spec['texture'])
     if not texture_target.exists() or digest(texture_target.read_bytes()) != digest(texture):
         atomic_write(texture_target, texture)
-    pack = checked(user, 'load/mm3d-model-textures/0004000000125500/pack.json')
+    pack = checked(user, f'load/mm3d-model-textures/{title}/pack.json')
     if not pack.exists():
         atomic_write(pack, b'{"options":{"skip_mipmap":true,"flip_png_files":true,"use_new_hash":true}}')
     if play_original != play_updated:
@@ -97,7 +106,7 @@ def apply_controls(user, resources):
     replacement = (resources/'desktop-controls/code.bps').read_bytes()
     if digest(replacement) != spec['patch_sha256']:
         raise ValueError('Desktop gameplay input patch checksum mismatch')
-    target = checked(user, 'load/mods/0004000000125500/code.bps')
+    target = checked(user, f'load/mods/{installed_title(user)}/code.bps')
     original = target.read_bytes()
     if digest(original) == spec['patch_sha256']:
         return

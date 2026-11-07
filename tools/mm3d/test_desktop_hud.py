@@ -1,9 +1,13 @@
 import base64, hashlib, json, tempfile, unittest
 from pathlib import Path
-from desktop_hud import apply, apply_controls, reconstruct, ARCHIVE, CONFIG
+from desktop_hud import apply, apply_controls, installed_title, reconstruct, CONFIG
+
+def archive(title):
+    return f'load/mods/{title}/romfs/layout/Joker.Main.New.gar'
+ARCHIVE = archive('0004000000125500')
 
 class DesktopHudTests(unittest.TestCase):
-    def fixture(self, root):
+    def fixture(self, root, title='0004000000125500'):
         user=root/'user';resources=root/'resources';assets=resources/'desktop-hud';assets.mkdir(parents=True)
         source=b'owned-rom-layout';target=source+b'-custom-hud'
         spec={'source_sha256':hashlib.sha256(source).hexdigest(),'sha256':hashlib.sha256(target).hexdigest(),
@@ -12,11 +16,11 @@ class DesktopHudTests(unittest.TestCase):
         (assets/'layout.json').write_text(json.dumps(spec))
         play=b'owned-action-layout'
         (assets/'play.json').write_text(json.dumps({'source_sha256':hashlib.sha256(play).hexdigest(),'sha256':hashlib.sha256(play).hexdigest(),'size':len(play),'ops':[]}))
-        path=user/'load/mods/0004000000125500/romfs/layout/Joker.Main.Play.gar';path.parent.mkdir(parents=True);path.write_bytes(play)
+        path=user/f'load/mods/{title}/romfs/layout/Joker.Main.Play.gar';path.parent.mkdir(parents=True);path.write_bytes(play)
         texture=b'custom-atlas'
         (assets/'atlas.png').write_bytes(texture)
         (assets/'upgrade.json').write_text(json.dumps({'texture':'atlas.png','texture_sha256':hashlib.sha256(texture).hexdigest()}))
-        for rel,data in ((ARCHIVE,source),(CONFIG,b'{"hud_diamond_enabled":false,"walk_speed":2}'),('save/sentinel',b'save')):
+        for rel,data in ((archive(title),source),(CONFIG,b'{"hud_diamond_enabled":false,"walk_speed":2}'),('save/sentinel',b'save')):
             p=user/rel;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(data)
         return user,resources,spec,source,target
 
@@ -28,6 +32,19 @@ class DesktopHudTests(unittest.TestCase):
             self.assertEqual((user/'save/sentinel').read_bytes(),b'save')
             backup=user/'config/dekui-backups';self.assertEqual(next(backup.glob('*.gar')).read_bytes(),source)
             count=len(list(backup.iterdir()));apply(user,res);self.assertEqual(len(list(backup.iterdir())),count)
+
+    def test_europe_installation_targets_europe_mod_folder(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            user,res,spec,source,target=self.fixture(Path(tmp),'0004000000125600')
+            apply(user,res)
+            self.assertEqual((user/archive('0004000000125600')).read_bytes(),target)
+
+    def test_requires_exactly_one_supported_game_folder(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            user=Path(tmp)/'user'
+            with self.assertRaisesRegex(ValueError,'supported installed game'): installed_title(user)
+            (user/'load/mods/0004000000000099').mkdir(parents=True)
+            with self.assertRaisesRegex(ValueError,'supported installed game'): installed_title(user)
 
     def test_rejects_damaged_recipe_and_preserves_custom_hud(self):
         with tempfile.TemporaryDirectory() as tmp:

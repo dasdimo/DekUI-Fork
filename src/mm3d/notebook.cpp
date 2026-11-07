@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "mm3d/notebook.h"
 #include "mm3d/notebook_paths.h"
+#include "mm3d/mods_location.h"
 
 #include <cmath>
 #include <cstring>
@@ -29,7 +30,6 @@ constexpr std::size_t kX = 0x99E8;
 constexpr std::size_t kY = 0x99EC;
 constexpr std::size_t kScaleX = 0x99F4;
 constexpr std::size_t kScaleY = 0x99F8;
-constexpr std::uint64_t kMajoraMask3DTitleId = 0x0004000000125500ULL;
 
 QString OriginalLayout(const char* name) {
 #ifdef ENABLE_MM3D_GAME_FOLDER
@@ -62,8 +62,10 @@ float Load(const std::string& bytes, std::size_t offset) {
 } // namespace
 
 std::string EventsOverridePath() {
-    return QtUserPath(FileUtil::UserPath::LoadDir).toStdString() +
-        fmt::format("mods/{:016X}/romfs/layout/Joker.Main.Play.SubMenu.gar", kMajoraMask3DTitleId);
+    const auto load = QtUserPath(FileUtil::UserPath::LoadDir);
+    const auto title = ModsLocation::InstalledTitleId(load, "romfs/layout/Joker.Main.Play.SubMenu.gar");
+    if (title.isEmpty()) return {};
+    return (load + "mods/" + title + "/romfs/layout/Joker.Main.Play.SubMenu.gar").toStdString();
 }
 
 std::string DefaultSourceArchive() {
@@ -269,8 +271,9 @@ namespace {
 constexpr std::size_t kTelop=0xCCE8, kTelopX=kTelop+0x354;
 constexpr unsigned kTelopFields[]{0x138,0x13C,0x144,0x148,0x290,0x354,0x36C,0x370,0x3AC,0x3B8,0x3BC,0x3C0,0x3C4,0x3C8,0x3CC};
 QString TelopOutput() {
-    return QtUserPath(FileUtil::UserPath::LoadDir) +
-        QString::fromStdString(fmt::format("mods/{:016X}/romfs/layout/Joker.Main.gar",kMajoraMask3DTitleId));
+    const auto load=QtUserPath(FileUtil::UserPath::LoadDir);
+    const auto title=ModsLocation::InstalledTitleId(load,"romfs/layout/Joker.Main.gar");
+    return title.isEmpty()?QString():load+"mods/"+title+"/romfs/layout/Joker.Main.gar";
 }
 bool OwnTelop(const QString& output) {
     const auto backup=output+".mm3d-telop-source";
