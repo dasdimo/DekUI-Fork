@@ -6,6 +6,7 @@ import argparse
 import base64
 import hashlib
 import json
+import re
 from pathlib import Path, PurePosixPath
 import shutil
 import tempfile
@@ -57,7 +58,11 @@ def inputs(roots):
 def capture(args, stage):
     roots = {'original': args.original, 'restoration': args.restoration}
     candidates = inputs(roots)
-    recipe = {'version': 1, 'private': True, 'title_id': '0004000000125500',
+    # The captured install owns one game; its title id is the mods subfolder name.
+    title = args.mods.resolve().name
+    if not re.fullmatch(r'[0-9A-Fa-f]{16}', title):
+        raise ValueError('The mods directory must be the title-id folder under load/mods')
+    recipe = {'version': 1, 'private': True, 'title_id': title,
               'files': [], 'settings': []}
     # Include all runtime mod files and source baselines; historical backups are excluded.
     for p in sorted(args.mods.rglob('*')):
@@ -107,6 +112,8 @@ def replay(args, stage):
     recipe = json.loads((args.recipe / 'recipe.json').read_text())
     if recipe['version'] != 1:
         raise ValueError('Unsupported recipe version')
+    if not re.fullmatch(r'[0-9A-Fa-f]{16}', str(recipe.get('title_id') or '')):
+        raise ValueError('Recipe title id is missing or malformed')
     roots = {'original': args.original, 'restoration': args.restoration}
     for entry in recipe['files']:
         source = safe(roots[entry['input_root']], entry['input']).read_bytes()

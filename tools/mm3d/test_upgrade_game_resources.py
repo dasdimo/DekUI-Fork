@@ -18,7 +18,9 @@ class ResourceUpgradeTests(unittest.TestCase):
         self.user = self.root/'user'
         self.rom = self.root/'game.3ds'
         self.rom.write_bytes(b'game')
-        self.rom_hash = json.loads((setup_game_folder.RESOURCES/'supported-rom.json').read_text())['main_partition_sha256']
+        roms = json.loads((setup_game_folder.RESOURCES/'supported-rom.json').read_text())['roms']
+        self.rom_hash = next(e['main_partition_sha256'] for e in roms if e['region'] == 'usa')
+        self.eur_hash = next(e['main_partition_sha256'] for e in roms if e['region'] == 'eur')
         self.put(upgrade.READY, json.dumps({'version': 1, 'rom_sha256': self.rom_hash, 'extra': 'keep'}).encode())
         # Realistic user trees: every byte must survive, including save states,
         # classic saves, customized HUD/layout files and texture packs.
@@ -88,6 +90,21 @@ class ResourceUpgradeTests(unittest.TestCase):
         backup, = (self.user/'setup').glob('resource-upgrade-backup-*')
         self.assertEqual((backup/'backup'/existing).read_bytes(), self.old['use.gmsg'])
         self.assertNotIn('resource_version', json.loads((backup/'backup'/upgrade.READY).read_bytes()))
+
+    def test_europe_base_passes_the_rom_identity_gate(self):
+        # The identity gate accepts every supported base. The message pipeline is
+        # still USA-only (pending text profile), so these fixtures stay USA-shaped.
+        ready = json.loads((self.user/upgrade.READY).read_bytes())
+        ready['rom_sha256'] = self.eur_hash
+        ready['title_id'] = '0004000000125600'
+        self.put(upgrade.READY, json.dumps(ready).encode())
+        with self.builders():
+            self.run_upgrade()
+            self.run_upgrade()
+        self.assert_kept()
+        published = json.loads((self.user/upgrade.READY).read_bytes())
+        self.assertEqual(published['rom_sha256'], self.eur_hash)
+        self.assertEqual(published['title_id'], '0004000000125600')
 
     def test_retired_sky_never_triggers_extraction(self):
         with self.builders() as (_, extract):

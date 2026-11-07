@@ -56,7 +56,7 @@ class GraphicalSetupTests(unittest.TestCase):
     def test_publish_failure_removes_only_new_game(self):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp);rom=root/'original.cci';rom.write_bytes(b'original')
-            with patch('setup_game_folder.validate'), patch('setup_game_folder.extract',side_effect=lambda rom,out:out.mkdir(parents=True)), patch('setup_game_folder.build'), patch.object(Path,'rename',side_effect=OSError('disk failure')):
+            with patch('setup_game_folder.validate',return_value={'title_id':'0004000000125500','main_partition_sha256':'0'*64}), patch('setup_game_folder.extract',side_effect=lambda rom,out:out.mkdir(parents=True)), patch('setup_game_folder.build'), patch.object(Path,'rename',side_effect=OSError('disk failure')):
                 with self.assertRaisesRegex(OSError,'disk failure'):
                     setup(root,root,rom)
             self.assertEqual(rom.read_bytes(),b'original')
@@ -67,7 +67,7 @@ class GraphicalSetupTests(unittest.TestCase):
     def test_in_place_setup_never_copies_or_moves_game(self):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp);rom=root/'My Game.3ds';rom.write_bytes(b'keep')
-            with patch('setup_game_folder.validate'),patch('setup_game_folder.extract',side_effect=lambda rom,out:out.mkdir(parents=True)),patch('setup_game_folder.build'):
+            with patch('setup_game_folder.validate',return_value={'title_id':'0004000000125500','main_partition_sha256':'0'*64}),patch('setup_game_folder.extract',side_effect=lambda rom,out:out.mkdir(parents=True)),patch('setup_game_folder.build'):
                 setup(root,root,rom,copy_game=False)
             self.assertEqual(rom.read_bytes(),b'keep')
             self.assertFalse((root/'game').exists())
@@ -82,7 +82,7 @@ class GraphicalSetupTests(unittest.TestCase):
             root=Path(tmp)/'app';root.mkdir();rom=Path(tmp)/'external.3ds';rom.write_bytes(b'keep')
             with self.assertRaisesRegex(ValueError,'beside the application'):
                 setup(root,root,rom,copy_game=False)
-            with patch('setup_game_folder.validate'),patch('setup_game_folder.extract',side_effect=lambda rom,out:out.mkdir(parents=True)),patch('setup_game_folder.build'):
+            with patch('setup_game_folder.validate',return_value={'title_id':'0004000000125500','main_partition_sha256':'0'*64}),patch('setup_game_folder.extract',side_effect=lambda rom,out:out.mkdir(parents=True)),patch('setup_game_folder.build'):
                 setup(root,root,rom,copy_game=False,reference_game=True)
             self.assertEqual(rom.read_bytes(),b'keep');self.assertFalse((root/'game').exists())
             self.assertTrue((root/'user/setup/ready.json').is_file())

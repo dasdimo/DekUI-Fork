@@ -10,16 +10,21 @@ class SetupTests(unittest.TestCase):
     def test_replay_and_rejections(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            for name in ('original', 'restoration', 'mods', 'config', 'recipe', 'stage'):
-                (root / name).mkdir()
+            for name in ('original', 'restoration', 'mods/0004000000125500', 'config', 'recipe', 'stage'):
+                (root / name).mkdir(parents=True)
             source = root / 'original/test.gar'
             source.write_bytes(b'abcdef')
-            (root / 'mods/test.gar').write_bytes(b'abXXefLONG')
+            mods = root / 'mods/0004000000125500'
+            (mods / 'test.gar').write_bytes(b'abXXefLONG')
             (root / 'config/presentation.json').write_text('{"game_camera_fov":65}')
             (root / 'config/notebook.json').write_text('{"source_archive":"/private/local"}')
             args = argparse.Namespace(**{name: root / name for name in
-                ('original', 'restoration', 'mods', 'config', 'recipe')})
+                ('original', 'restoration', 'config', 'recipe')})
+            args.mods = mods
             capture(args, args.recipe)
+            # A mods directory that is not a title-id folder cannot be captured.
+            with self.assertRaisesRegex(ValueError, 'title-id'):
+                capture(argparse.Namespace(**dict(vars(args), mods=root / 'mods')), args.recipe / 'other')
             replay(args, root / 'stage')
             self.assertEqual((root / 'stage/load/mods/0004000000125500/test.gar').read_bytes(), b'abXXefLONG')
             self.assertEqual(source.read_bytes(), b'abcdef')

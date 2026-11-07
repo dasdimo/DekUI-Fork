@@ -181,9 +181,10 @@ def upgrade(root, rom, restoration):
     from build_release_assets import build
     user = root/'user'
     with locked(user):
-        expected_rom = json.loads((RESOURCES/'supported-rom.json').read_text())['main_partition_sha256']
+        expected_roms = {entry['main_partition_sha256']
+                         for entry in json.loads((RESOURCES/'supported-rom.json').read_text())['roms']}
         ready = json.loads(checked(user, READY).read_bytes())
-        if ready.get('version') != 1 or ready.get('rom_sha256') != expected_rom:
+        if ready.get('version') != 1 or ready.get('rom_sha256') not in expected_roms:
             raise ValueError('Unrecognized game setup. Existing user data was not replaced.')
         version = ready.get('resource_version', 1)
         if type(version) is not int or version not in (1, RESOURCE_VERSION):
@@ -213,6 +214,9 @@ def upgrade(root, rom, restoration):
                 if target.is_file() and digest(target.read_bytes().replace(b'\r\n', b'\n')) == sha:
                     changes[relative] = None  # Exact disabled stock profiles only; backed up first.
             ready['layout_version'] = layout_migration.VERSION
+        # eur messages: pending text profile. This path regenerates only the USA
+        # dialogue resources; an Europe-based setup raises when the extraction
+        # below has no message/us inputs. A follow-up selects the profile block.
         missing = any(not checked(user, p).is_file() for p in MESSAGE_PATHS)
         if ready.get('resource_version', 1) < RESOURCE_VERSION or missing:
             with tempfile.TemporaryDirectory(prefix='.resource-build-', dir=user/'setup') as tmp:

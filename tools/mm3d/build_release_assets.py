@@ -93,6 +93,8 @@ def build(original, restoration, output):
             write(stage, entry['output'], data)
         # Expand native message storage from the user's verified game. Runtime
         # hooks select classic wording only when the corresponding option is on.
+        # eur messages: pending text profile; this reads the USA extraction only
+        # and raises for an Europe extraction until the profile block is wired.
         message_source = original / 'romfs/message/us'
         english, _, _ = prepare_owl((message_source / 'use.gmsg').read_bytes())
         localized, _ = prepare_localized(message_source)

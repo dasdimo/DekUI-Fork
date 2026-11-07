@@ -107,17 +107,17 @@ def setup(root, restoration, selected_rom=None, copy_game=True, reference_game=F
     try:
         original = stage/'setup/original'
         extract(rom,original)
-        mod_root=stage/'load/mods/'+title
+        mod_root=stage/('load/mods/'+title)
         build(original,restoration,mod_root)
         write(stage, layout_migration.BASELINE, layout_migration.baseline(layout_policy))
-        (stage/'load/textures/'+title).mkdir(parents=True)
+        (stage/('load/textures/'+title)).mkdir(parents=True)
         shutil.copytree(RESOURCES/'defaults',stage/'config/mm3d-local')
         write(stage, 'config/qt-config.ini', b'[Utility]\ncustom_textures=true\ncustom_textures\\default=false\n[Layout]\nlayout_option=1\nlayout_option\\default=false\n[Renderer]\nuse_hw_shader=false\nuse_hw_shader\\default=false\nasync_shader_compilation=false\nasync_shader_compilation\\default=false\nuse_disk_shader_cache=false\nuse_disk_shader_cache\\default=false\nuse_vsync=true\nuse_vsync\\default=true\nresolution_factor=4\nresolution_factor\\default=false\ngraphics_api=2\ngraphics_api\\default=false\n')
         p=stage/'config/mm3d-local/notebook.json'; obj=json.loads(p.read_text())
         obj['source_archive']='setup/original/romfs/layout/Joker.Main.Play.SubMenu.gar'
         obj['fade_source']='setup/original/romfs/layout/Joker.gar'
         p.write_text(json.dumps(obj,indent=2)+'\n')
-        (stage/'setup/ready.json').write_text(json.dumps({'version':1,'resource_version':RESOURCE_VERSION,'layout_version':layout_migration.VERSION,'rom_sha256':json.loads((RESOURCES/'supported-rom.json').read_text())['main_partition_sha256']})+'\n')
+        (stage/'setup/ready.json').write_text(json.dumps({'version':1,'resource_version':RESOURCE_VERSION,'layout_version':layout_migration.VERSION,'rom_sha256':selected['main_partition_sha256'],'title_id':title})+'\n')
         if copy_game and not destination.exists():
             shutil.copyfile(rom, stage/'game-copy.cci')
             validate(stage/'game-copy.cci')
