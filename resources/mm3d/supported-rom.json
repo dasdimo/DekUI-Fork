@@ -1,7 +1,21 @@
 {
-  "program_id": "0004000000125500",
-  "remaster_version": 2,
-  "main_partition_bytes": 654643200,
-  "main_partition_sha256": "9c756279e3ec00bb9009f92ca2e7b9ec8b1fcdfcd9de057658b209caa24323da",
-  "description": "Verified local decrypted USA Rev 1 main partition; other dumps not yet supported."
+  "schema": 2,
+  "roms": [
+    {
+      "title_id": "0004000000125500",
+      "region": "usa",
+      "remaster_version": 2,
+      "main_partition_bytes": 654643200,
+      "main_partition_sha256": "9c756279e3ec00bb9009f92ca2e7b9ec8b1fcdfcd9de057658b209caa24323da",
+      "description": "Verified local decrypted USA Rev 1 main partition."
+    },
+    {
+      "title_id": "0004000000125600",
+      "region": "eur",
+      "remaster_version": 2,
+      "main_partition_bytes": 668647424,
+      "main_partition_sha256": "a26108ef34b49df421cca20eda1b4f38f596ebef9ac6b9c70a64245be055a722",
+      "description": "Verified local decrypted Europe (En,Fr,De,Es,It) Rev 1 main partition."
+    }
+  ]
 }

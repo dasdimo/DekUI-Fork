@@ -15,13 +15,25 @@ from upgrade_game_resources import RESOURCE_VERSION
 import layout_migration
 
 
+def select(roms, actual):
+    # Match by program id when the probe reports one, else by partition bytes + sha256.
+    for entry in roms:
+        if actual.get('program_id', '').lower() == entry['title_id']:
+            if all(actual.get(key) == entry[key] for key in ('remaster_version', 'main_partition_bytes', 'main_partition_sha256')):
+                return entry
+    for entry in roms:
+        if (actual.get('main_partition_bytes'), actual.get('main_partition_sha256')) == \
+                (entry['main_partition_bytes'], entry['main_partition_sha256']):
+            return entry
+    return None
+
+
 def validate(rom):
-    expected = json.loads((RESOURCES / 'supported-rom.json').read_text())
-    actual = probe(rom)
-    for key in ('program_id', 'remaster_version', 'main_partition_bytes', 'main_partition_sha256'):
-        if actual[key] != expected[key]:
-            raise ValueError('Unsupported ROM revision/content; expected the verified decrypted USA Rev 1 dump')
-    return actual
+    roms = json.loads((RESOURCES / 'supported-rom.json').read_text())['roms']
+    selected = select(roms, probe(rom))
+    if selected is None:
+        raise ValueError('Unsupported ROM revision/content; expected the verified decrypted USA or Europe Rev 1 dump')
+    return selected
 
 
 def extract(rom, output):
@@ -29,7 +41,6 @@ def extract(rom, output):
     manifest = json.loads((RESOURCES / 'setup-fingerprints.json').read_text())
     wanted = {e['input'][6:] for e in manifest['files'] if e['input_root'] == 'original'}
     wanted.add('layout/Joker.Main.Play.gar')
-    wanted.update('message/us/'+name+'.gmsg' for name in ('use', 'usf', 'uss'))
     with rom.open('rb') as stream:
         size = rom.stat().st_size
         def read(at, count):
@@ -39,6 +50,11 @@ def extract(rom, output):
             if len(data) != count: raise ValueError('Short ROM read')
             return data
         base = struct.unpack('<I', read(0x120,4))[0] * 512
+        title_id = '%016x' % struct.unpack('<Q', read(base+0x118,8))[0]
+        if title_id not in manifest['titles']:
+            raise ValueError('Unsupported ROM revision/content; expected the verified decrypted USA or Europe Rev 1 dump')
+        messages = manifest['titles'][title_id]['messages']
+        wanted.update(messages['source_dir'][6:]+'/'+name+'.gmsg' for name in messages['names'])
         rb, rn = struct.unpack('<II',read(base+0x1b0,8))
         start, length = base + rb*512 + 0x1000, rn*512-0x1000
         if length <= 0: raise ValueError('Invalid RomFS')
@@ -79,7 +95,8 @@ def setup(root, restoration, selected_rom=None, copy_game=True, reference_game=F
     if not copy_game and not reference_game and rom.resolve().parent != root.resolve() and rom.resolve() != (root/'game/mm3d.cci').resolve():
         raise ValueError('Place the game beside the application before starting setup.')
     layout_policy = layout_migration.policy(RESOURCES)
-    validate(rom)
+    selected = validate(rom)
+    title = selected['title_id']
     output = root/'user'
     if output.exists(): raise ValueError('user directory already exists; refusing to replace settings or saves')
     destination = root/'game/mm3d.cci'
@@ -90,10 +107,10 @@ def setup(root, restoration, selected_rom=None, copy_game=True, reference_game=F
     try:
         original = stage/'setup/original'
         extract(rom,original)
-        mod_root=stage/'load/mods/0004000000125500'
+        mod_root=stage/'load/mods/'+title
         build(original,restoration,mod_root)
         write(stage, layout_migration.BASELINE, layout_migration.baseline(layout_policy))
-        (stage/'load/textures/0004000000125500').mkdir(parents=True)
+        (stage/'load/textures/'+title).mkdir(parents=True)
         shutil.copytree(RESOURCES/'defaults',stage/'config/mm3d-local')
         write(stage, 'config/qt-config.ini', b'[Utility]\ncustom_textures=true\ncustom_textures\\default=false\n[Layout]\nlayout_option=1\nlayout_option\\default=false\n[Renderer]\nuse_hw_shader=false\nuse_hw_shader\\default=false\nasync_shader_compilation=false\nasync_shader_compilation\\default=false\nuse_disk_shader_cache=false\nuse_disk_shader_cache\\default=false\nuse_vsync=true\nuse_vsync\\default=true\nresolution_factor=4\nresolution_factor\\default=false\ngraphics_api=2\ngraphics_api\\default=false\n')
         p=stage/'config/mm3d-local/notebook.json'; obj=json.loads(p.read_text())
