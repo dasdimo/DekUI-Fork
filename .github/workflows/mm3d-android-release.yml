@@ -165,9 +165,13 @@ jobs:
               if any(name.endswith('/libVkLayer_khronos_validation.so') for name in archive.namelist()):
                   raise SystemExit("Optimized APK contains the development Vulkan validation layer")
           cert = subprocess.check_output([str(sdk/'apksigner'), 'verify', '--print-certs', str(apk)], text=True)
-          expected = '73e734704569a6f17f126bf09c243c24442f3e68c2ab20256b31cb44c6631615'
+          # This fork signs with its own release key (the upstream OTPR26 key is not
+          # available here), so builds install beside/instead of upstream APKs rather
+          # than updating them. The pin keeps THIS fork's releases stable: all fork
+          # builds must share this one signing identity.
+          expected = '60fb95cf18ca09dde52266967b4a51d159f4b65e2b091f3eba36e59f585f4b3d'
           if not re.search(r'Signer #1 certificate SHA-256 digest: '+expected, cert):
-              raise SystemExit('APK signing identity does not match existing installations')
+              raise SystemExit('APK signing identity does not match this fork release key')
           badging = subprocess.check_output([str(sdk/'aapt'), 'dump', 'badging', str(apk)], text=True)
           if "name='io.github.otpr26.dekuifork'" not in badging.splitlines()[0]:
               raise SystemExit('APK application ID changed')

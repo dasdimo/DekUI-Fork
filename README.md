@@ -6,9 +6,15 @@
 
 Supports Android, Windows, Linux, and macOS.
 
+## About this fork
+
+This is a fork of [OTPR26/DekUI-Fork](https://github.com/OTPR26/DekUI-Fork). It adds **European (Europe Rev 1) ROM support alongside the USA Rev 1 ROM**, and a **full Russian translation for the European game** based on the ZELDA64RUS `LoZMM3D (PAL rev 1) Russian translation v1.1` patch. Choose a European ROM during setup and the game can run in Russian (English stays selectable); USA ROM behavior is unchanged. This fork's own changes are marked with `EUR/RUS SUPPORT` comments in the source.
+
+APKs here are signed with this fork's release key, so they **install fresh rather than updating** an APK installed from the upstream repository. Downloads: [Releases](https://github.com/yuno-kojo/DekUI-Fork/releases).
+
 Majora ReMasked builds on [tgacquin’s DekUI](https://github.com/tgacquin/mm3d-dekui), the [Azahar emulator](https://github.com/azahar-emu/azahar), and [Project Restoration](https://restoration.zora.re/). It runs MM3D through an adapted 3DS emulator; it is not a game recompilation or a native rewrite of the game.
 
-[Downloads](https://github.com/OTPR26/DekUI-Fork/releases) · [Android setup](docs/android/SETUP.md) · [Build instructions](docs/android/BUILD.md)
+[Downloads](https://github.com/yuno-kojo/DekUI-Fork/releases) · [Android setup](docs/android/SETUP.md) · [Build instructions](docs/android/BUILD.md)
 
 ![Majora ReMasked masks](src/android/app/src/main/res/drawable-nodpi/dekui_launcher_masks.png)
 
@@ -18,7 +24,7 @@ Majora ReMasked builds on [tgacquin’s DekUI](https://github.com/tgacquin/mm3d-
 - A full-screen menu for touch, mouse, and controllers.
 - Controller bindings and button-layout preferences, touch overlay controls, and screen swapping.
 - Remappable R3 Pictograph control, independent of equipped items.
-- English, French and Spanish game-language selection before starting gameplay.
+- English, French and Spanish game-language selection before starting gameplay, plus Russian for European ROMs.
 - Separate presentation and native game FPS counters.
 - Customizable Wii U Style HUD with adjustable positions, scale, spacing, and visibility; custom textures supported including Henriko's 4K Texture Pack.
 - Separate Field of View and Camera Distance controls
@@ -31,8 +37,8 @@ Majora ReMasked builds on [tgacquin’s DekUI](https://github.com/tgacquin/mm3d-
 
 ## Get started
 
-1. Install the package for your platform from [Releases](https://github.com/OTPR26/DekUI-Fork/releases).
-2. Select your own **Majora’s Mask 3D USA Rev 1 / v1.1** ROM during setup.
+1. Install the package for your platform from [Releases](https://github.com/yuno-kojo/DekUI-Fork/releases).
+2. Select your own **Majora’s Mask 3D USA Rev 1 / v1.1** or **Europe (En,Fr,De,Es,It) Rev 1** ROM during setup. A European ROM can play in Russian.
 3. Open Settings to choose a custom-texture folder, controller bindings, and HUD options.
 4. For Adult Link or Dark Link, open **Settings → Mods**, select your own supported OoT3D ROM and optional texture folder, then generate the mod before starting gameplay.
 5. For Twilight Princess Link, choose that player model in **Settings → Mods**, select your own GameCube Twilight Princess ROM (ISO, GCM, or RVZ) and optional texture folder, then generate the mod. Texture matching searches subfolders.
