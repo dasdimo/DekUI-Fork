@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import sys
 import tarfile
+import time
 import urllib.request
 import zipfile
 
@@ -22,6 +23,19 @@ LINUX_PYTHON = {
 
 def run(*args, **kwargs):
     subprocess.run([str(x) for x in args], check=True, **kwargs)
+
+
+def download(url, archive):
+    # GitHub release downloads intermittently answer 502/504; retry with backoff.
+    for attempt in range(3):
+        try:
+            urllib.request.urlretrieve(url, archive)
+            return
+        except Exception:
+            archive.unlink(missing_ok=True)
+            if attempt == 2:
+                raise
+            time.sleep(5 * (attempt + 1))
 
 
 def sanitize_numpy_metadata(runtime):
@@ -140,7 +154,7 @@ def main():
     if sys.platform.startswith('linux'):
         archive = root/'python.tar.gz'
         name = f'cpython-3.13.2%2B20250317-{machine}-unknown-linux-gnu-install_only_stripped.tar.gz'
-        urllib.request.urlretrieve('https://github.com/astral-sh/python-build-standalone/releases/download/20250317/'+name,archive)
+        download('https://github.com/astral-sh/python-build-standalone/releases/download/20250317/'+name,archive)
         if hashlib.sha256(archive.read_bytes()).hexdigest() != LINUX_PYTHON[machine]:
             raise RuntimeError('Linux Python checksum mismatch')
         with tarfile.open(archive) as tar:
