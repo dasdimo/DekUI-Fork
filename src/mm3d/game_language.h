@@ -20,7 +20,7 @@ inline std::string QuotedTitleId(std::uint64_t id) {
 }
 inline int LanguageProfileFromRecord(const std::string& record) {
     const std::string eur_id = QuotedTitleId(MajoraMask3DEurTitle);
-    const auto value_after = [&record, &eur_id](const char* key, const std::string& wanted) {
+    const auto value_after = [&record](const char* key, const std::string& wanted) {
         const auto at = record.find(key);
         if (at == std::string::npos) return false;
         const auto found = record.find(wanted, at);
