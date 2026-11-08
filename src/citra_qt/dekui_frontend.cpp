@@ -1040,7 +1040,10 @@ public:
                 this, QStringLiteral("Majora ReMasked"),
                 QStringLiteral(
                     "Majora ReMasked\nA DekUI Fork\n\nMajora’s Mask 3D\nBuilt on DekUI, Azahar and Project "
-                    "Restoration.\nYour game and optional OoT3D mod inputs are supplied by you."));
+                    "Restoration.\nYour game and optional OoT3D mod inputs are supplied by you."
+                    "\n\nUSA and Europe Rev 1 games are supported. Europe games play with the Russian "
+                    "community translation (ZELDA64RUS) or the original European text; the choice is made "
+                    "when your game is prepared."));
         });
         Button(menu, QStringLiteral("Quit"), [this] { reject(); });
         for (int i = 0; i < menu->count(); ++i)

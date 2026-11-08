@@ -365,7 +365,7 @@ class DekuiSettingsActivity : AppCompatActivity() {
                 note("1x is normal speed. Walk affects grounded movement; climb affects ladders and vines. Swim includes underwater movement.")
                 bool("Disable low-heart beeping","disable_low_health_beep");bool("Disable Tatl reminders","disable_tatl_reminders") }
             "Cheats" -> note("Load your saved game to use cheats from the in-game menu. Availability is checked against the running game.")
-            "About" -> note("Majora ReMasked — A DekUI Fork. Uses Azahar and Project Restoration. \n\n${org.citra.citra_emu.BuildConfig.VERSION_NAME}")
+            "About" -> note("Majora ReMasked — A DekUI Fork. Uses Azahar and Project Restoration. \n\nPlays your own Majora’s Mask 3D USA Rev 1 or Europe Rev 1 game. Europe games use the Russian community translation (ZELDA64RUS) or the original European text — you choose at setup; an already-Russian game file keeps its text.\n\n${org.citra.citra_emu.BuildConfig.VERSION_NAME}")
         }
         setContentView(root)
     }

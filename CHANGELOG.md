@@ -1,5 +1,24 @@
 # Majora ReMasked changes
 
+## Majora ReMasked 0.5.2 — Russian Game Files & Text Choice
+*A DekUI Fork*
+
+- Your already-translated Europe game file from the ZELDA64RUS v1.1 patch (`.cxi`) installs directly: setup recognizes it, keeps the Russian text, and never re-translates it.
+- Europe games pick their text language during setup: **Russian** (ZELDA64RUS community translation with matching Cyrillic fonts) or **English** (the original European text). Android Setup asks which one you want; desktop game preparation accepts `--text-language rus|stock`.
+- The About screens now describe supported game files and the text language choice.
+
+## Majora ReMasked 0.5.1 — Moving Game Data
+*A DekUI Fork*
+
+- Settings → General can move the whole game data folder — game, saves, settings, and generated mods — to any folder you choose, keeping the previous folder as a backup.
+
+## Majora ReMasked 0.5.0 — Europe & Russian
+*A DekUI Fork*
+
+- The **Europe (En,Fr,De,Es,It) Rev 1** game now runs on every platform alongside USA Rev 1; USA behavior is unchanged.
+- Full **Russian translation** for the European game based on the ZELDA64RUS `LoZMM3D (PAL rev 1) Russian translation v1.1` patch: menus, items, dialogue, and owl/statue text with Cyrillic fonts.
+- Generated game data stays yours; the translation is applied during setup from files you already own.
+
 ## Majora ReMasked 0.4.1 - Controls & Settings
 *A DekUI Fork*
 
