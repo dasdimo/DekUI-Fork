@@ -163,9 +163,10 @@ inline int LanguageProfileFromDeck(const QString& root) {
     // Which language list the installed deck can actually render, matching the
     // values of MM3D::PlayerSettings::LanguageProfile. Title resolution follows
     // SelectedTitleId. An installed Europe deck records its text language in
-    // setup/ready.json; a ready.json without the record was built by an older
-    // Setup, which only ever produced built-in text. An uninstalled Europe
-    // card defaults to Russian exactly like Setup itself does.
+    // setup/ready.json; a ready.json without the field was made by a Setup that
+    // never offered Europe another default, so it means the Russian pack too.
+    // An uninstalled Europe card defaults to Russian exactly like Setup itself
+    // does.
     const QString title=SelectedTitleId(root);
     bool ok=false;
     const quint64 id=title.toULongLong(&ok,16);

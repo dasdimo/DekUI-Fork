@@ -27,11 +27,10 @@ inline int LanguageProfileFromRecord(const std::string& record) {
         return found != std::string::npos && found < at + 80; // never past the next field
     };
     if (!value_after("\"title_id\"", eur_id)) return UsLanguages;
-    // No record text language: Setup's own default for Europe is Russian, and
-    // Android installs predating the record were made through that default
-    // prompt. Desktop ready.json without the field predates language
-    // switching entirely, so its built-in text stays.
-    return value_after("\"text_language\"", "\"rus\"") ? EurRussianLanguages : EurStockLanguages;
+    // No text_language field: Setup never offered Europe a different default,
+    // so any record made without the field was made with the Russian pack.
+    // Only an explicit "stock" choice keeps the built-in text.
+    return value_after("\"text_language\"", "\"stock\"") ? EurStockLanguages : EurRussianLanguages;
 }
 // CFG language ids for a profile, in the order the UI lists them:
 // English, French, German, Spanish, Italian (CFG ids 1,2,3,5,4 - 4 is Italian).

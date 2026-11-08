@@ -368,7 +368,7 @@ static Core::System::ResultStatus RunCitra(const std::string& filepath) {
 #ifdef ENABLE_MM3D_PRESENTATION
     auto game_language_config = Service::CFG::GetModule(system);
     MM3D::PlayerSettings::language_profile.store(MM3D::PlayerSettings::ProfileFromRecordFile(
-        FileUtil::GetUserPath(FileUtil::UserPath::User) + "setup/ready.json"));
+        FileUtil::GetUserPath(FileUtil::UserPath::UserDir) + "setup/ready.json"));
     MM3D::PlayerSettings::InitializeGameLanguage(*game_language_config);
     const auto apply_game_language = [&] {
         MM3D::PlayerSettings::ApplyPendingGameLanguage(*game_language_config);
@@ -490,7 +490,7 @@ jint Java_org_citra_citra_1emu_NativeLibrary_getDekuiLanguageProfile(JNIEnv*,jcl
     if (system.IsPoweredOn()) return MM3D::PlayerSettings::language_profile.load();
     // Power off: the installed deck's record is authoritative either way.
     return MM3D::PlayerSettings::ProfileFromRecordFile(
-        FileUtil::GetUserPath(FileUtil::UserPath::User) + "setup/ready.json");
+        FileUtil::GetUserPath(FileUtil::UserPath::UserDir) + "setup/ready.json");
 #else
     return 0;
 #endif
@@ -510,7 +510,7 @@ jboolean Java_org_citra_citra_1emu_NativeLibrary_setDekuiGameLanguage(JNIEnv*,jc
     const int profile = system.IsPoweredOn()
                             ? MM3D::PlayerSettings::language_profile.load()
                             : MM3D::PlayerSettings::ProfileFromRecordFile(
-                                  FileUtil::GetUserPath(FileUtil::UserPath::User) +
+                                  FileUtil::GetUserPath(FileUtil::UserPath::UserDir) +
                                   "setup/ready.json");
     if (!MM3D::PlayerSettings::SupportedLanguage(language, profile)) return false;
     if (system.IsPoweredOn()) {
