@@ -25,17 +25,27 @@ def run(*args, **kwargs):
     subprocess.run([str(x) for x in args], check=True, **kwargs)
 
 
-def download(url, archive):
-    # GitHub release downloads intermittently answer 502/504; retry with backoff.
+PYTHON_SOURCES = [
+    'https://github.com/astral-sh/python-build-standalone/releases/download/20250317/',
+    # Byte-identical mirror (this repo's release, tag mm3d-tp-python-20250317);
+    # keeps packaging working when upstream release-asset delivery fails.
+    # Re-upload both archives here whenever the pin below changes.
+    'https://github.com/yuno-kojo/DekUI-Fork/releases/download/mm3d-tp-python-20250317/',
+]
+
+
+def download(name, archive):
+    # GitHub release downloads intermittently answer 502/504; retry both sources.
     for attempt in range(3):
-        try:
-            urllib.request.urlretrieve(url, archive)
-            return
-        except Exception:
-            archive.unlink(missing_ok=True)
-            if attempt == 2:
-                raise
+        for base in PYTHON_SOURCES:
+            try:
+                urllib.request.urlretrieve(base + name, archive)
+                return
+            except Exception:
+                archive.unlink(missing_ok=True)
+        if attempt < 2:
             time.sleep(5 * (attempt + 1))
+    urllib.request.urlretrieve(PYTHON_SOURCES[0] + name, archive)
 
 
 def sanitize_numpy_metadata(runtime):
