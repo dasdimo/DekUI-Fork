@@ -20,7 +20,40 @@ object DekuiGameSetup {
         require(result.path.startsWith(canonicalPath + File.separator)) { "Invalid asset path" }
         return result
     }
-    fun prepare(context: Context, rom: File, root: File) {
+    /** True when the game at this file is a Europe title that has a Russian text pack. */
+    fun supportsRussian(context: Context, rom: File): Boolean = try {
+        RandomAccessFile(rom, "r").use { stream ->
+            require(stream.length() >= 0x210) { "Truncated game file" }
+            fun rd(at: Long, count: Int): ByteArray {
+                require(at >= 0 && count in 0..(stream.length() - at)) { "Truncated game file" }
+                return ByteArray(count).also { stream.seek(at); stream.readFully(it) }
+            }
+            val magic = String(rd(0x100, 4), Charsets.US_ASCII)
+            val base = when (magic) {
+                "NCSD" -> (ByteBuffer.wrap(rd(0x120, 4)).order(ByteOrder.LITTLE_ENDIAN).int.toLong() and 0xffffffffL) * 512
+                "NCCH" -> 0L
+                else -> return false
+            }
+            require(magic == "NCCH" || base >= 512)
+            require(String(rd(base + 0x100, 4), Charsets.US_ASCII) == "NCCH")
+            val length = (ByteBuffer.wrap(rd(if (magic == "NCSD") 0x124 else 0x104, 4))
+                .order(ByteOrder.LITTLE_ENDIAN).int.toLong() and 0xffffffffL) * 512
+            val key = "%016x".format(ByteBuffer.wrap(rd(base + 0x118, 8)).order(ByteOrder.LITTLE_ENDIAN).long)
+            if (json(context, "setup-fingerprints.json").getJSONObject("titles").optJSONObject(key)?.has("rus") != true) return false
+            // A verified deck whose text is already Russian has nothing to ask.
+            val roms = json(context, "supported-rom.json").getJSONArray("roms")
+            for (i in 0 until roms.length()) {
+                val entry = roms.getJSONObject(i)
+                if (entry.getString("title_id") == key && entry.getLong("main_partition_bytes") == length &&
+                    entry.optString("text_language") == "rus") return false
+            }
+            true
+        }
+    } catch (_: Exception) {
+        false
+    }
+
+    fun prepare(context: Context, rom: File, root: File, russian: Boolean = true) {
         val roms = json(context, "supported-rom.json").getJSONArray("roms")
         require(roms.length() > 0) { "Invalid supported-rom.json" }
         val recipe = json(context, "android-layout-recipe.json")
@@ -37,10 +70,11 @@ object DekuiGameSetup {
                 return ByteArray(count).also { stream.seek(at); stream.readFully(it) }
             }
             fun u32(at: Long) = ByteBuffer.wrap(read(at, 4)).order(ByteOrder.LITTLE_ENDIAN).int.toLong() and 0xffffffffL
-            require(String(read(0x100,4), Charsets.US_ASCII) == "NCSD") { "Select a decrypted .cci or .3ds game" }
-            val base = u32(0x120) * 512
-            val length = u32(0x124) * 512
-            require(base >= 512) { "Unsupported game revision" }
+            val magic = String(read(0x100,4), Charsets.US_ASCII)
+            require(magic == "NCSD" || magic == "NCCH") { "Select a decrypted .cci, .3ds or .cxi game" }
+            val base = if (magic == "NCSD") u32(0x120) * 512 else 0L
+            val length = if (magic == "NCSD") u32(0x124) * 512 else u32(0x104) * 512
+            require(magic == "NCCH" || base >= 512) { "Unsupported game revision" }
             require(String(read(base + 0x100,4), Charsets.US_ASCII) == "NCCH") { "Invalid game partition" }
             require(read(base + 0x18f,1)[0].toInt() and 4 != 0) { "The selected game must be decrypted" }
             val digest = MessageDigest.getInstance("SHA-256")
@@ -70,7 +104,7 @@ object DekuiGameSetup {
             // Europe profile's Russian block overrides the base when present.
             val title = json(context, "setup-fingerprints.json")
                 .getJSONObject("titles").getJSONObject(titleKey!!)
-            rusBlock = title.optJSONObject("rus")
+            rusBlock = if (russian) title.optJSONObject("rus") else null
             messages = rusBlock?.getJSONObject("messages") ?: title.getJSONObject("messages")
             sourceDir = messages.getString("source_dir")
             archiveNames = (0 until messages.getJSONArray("names").length())

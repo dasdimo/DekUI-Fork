@@ -152,7 +152,7 @@ class DekuiLaunchActivity : AppCompatActivity() {
             menuButton("Exit") { finishAndRemoveTask() }
         status=TextView(this).apply {
             typeface=normal;textSize=12f;setTextColor(dim);gravity=android.view.Gravity.END
-            text=if(game.isFile&&prefs.getBoolean("ready",false)) "" else "Select your Majora’s Mask 3D USA Rev 1 ROM to begin."
+            text=if(game.isFile&&prefs.getBoolean("ready",false)) "" else "Select your Majora’s Mask 3D USA or Europe Rev 1 ROM to begin."
             setPadding(0,dp(6),dp(12),0)
             accessibilityLiveRegion=android.view.View.ACCESSIBILITY_LIVE_REGION_POLITE
         }
@@ -196,28 +196,60 @@ class DekuiLaunchActivity : AppCompatActivity() {
         select.isEnabled = false
         status.text = "Preparing your game…"
         lifecycleScope.launch {
-            val result = withContext(Dispatchers.IO) {
+            val staged = withContext(Dispatchers.IO) {
                 runCatching {
                     check(DirectoryInitialization.areCitraDirectoriesReady()) { "App storage could not be initialized" }
                     val parent = game.parentFile!!; check(parent.isDirectory || parent.mkdirs())
                     val stage = File(parent,"import-${java.util.UUID.randomUUID()}.cci")
-                    try {
-                        contentResolver.openInputStream(uri)?.use { input ->
-                            stage.outputStream().use { output -> input.copyTo(output) }
-                        } ?: error("The selected file could not be opened")
-                        DekuiGameSetup.prepare(this@DekuiLaunchActivity, stage, File(NativeLibrary.getUserDirectory()))
-                        check(!game.exists()) { "A game is already installed" }
-                        check(stage.renameTo(game)) { "Could not finish importing the game" }
-                        check(prefs.edit().putBoolean("ready",true).commit())
-                    } finally { stage.delete() }
+                    contentResolver.openInputStream(uri)?.use { input ->
+                        stage.outputStream().use { output -> input.copyTo(output) }
+                    } ?: error("The selected file could not be opened")
+                    stage
                 }
             }
-            result.fold({ buildLauncher();openSettings("Graphics") }, {
-                status.text = it.message ?: "Game preparation failed. Please select the supported game file."
-                select.isEnabled = true
-                select.text = "Select ROM"
-            })
+            staged.fold({ stage ->
+                val offersRussian = withContext(Dispatchers.IO) {
+                    DekuiGameSetup.supportsRussian(this@DekuiLaunchActivity, stage)
+                }
+                if (offersRussian) chooseTextLanguage(stage) else finishImport(stage, true)
+            }, { failImport(it.message) })
         }
+    }
+
+    // Europe games ship a community Russian text pack; the choice decides
+    // which text the generated message archives carry. Nothing else changes.
+    private fun chooseTextLanguage(stage: File) {
+        status.text = "Choose the text language for your Europe game."
+        var decided = false
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Text language")
+            .setMessage("This Europe game also supports Russian text (community patch v1.1).\n\n" +
+                "Русский — Cyrillic menus, items and dialogue.\nEnglish — the original European text.")
+            .setPositiveButton("Русский") { _, _ -> decided = true; finishImport(stage, true) }
+            .setNegativeButton("English") { _, _ -> decided = true; finishImport(stage, false) }
+            .setOnCancelListener { if (!decided) { stage.delete(); failImport(null) } }
+            .show()
+    }
+
+    private fun finishImport(stage: File, russian: Boolean) {
+        status.text = "Preparing your game…"
+        lifecycleScope.launch {
+            val result = withContext(Dispatchers.IO) {
+                runCatching {
+                    DekuiGameSetup.prepare(this@DekuiLaunchActivity, stage, File(NativeLibrary.getUserDirectory()), russian)
+                    check(!game.exists()) { "A game is already installed" }
+                    check(stage.renameTo(game)) { "Could not finish importing the game" }
+                    check(prefs.edit().putBoolean("ready",true).commit())
+                }.onFailure { stage.delete() }
+            }
+            result.fold({ buildLauncher();openSettings("Graphics") }, { failImport(it.message) })
+        }
+    }
+
+    private fun failImport(reason: String?) {
+        status.text = reason ?: "Game preparation failed. Please select the supported game file."
+        select.isEnabled = true
+        select.text = "Select ROM"
     }
     private fun openSettings(page: String="General") {
         startActivity(Intent(this,DekuiSettingsActivity::class.java).putExtra("page",page))

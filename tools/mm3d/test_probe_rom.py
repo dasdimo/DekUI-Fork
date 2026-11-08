@@ -34,5 +34,22 @@ class ProbeTest(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'NCSD'):
                 probe(path)
 
+    def test_bare_cxi_image(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'fixture.cxi'
+            data = bytearray(2048)
+            data[0x100:0x104] = b'NCCH'
+            struct.pack_into('<I', data, 0x104, 3)
+            data[0x18f] = 4
+            struct.pack_into('<Q', data, 0x118, 0x125600)
+            struct.pack_into('<H', data, 0x20e, 7)
+            path.write_bytes(data)
+            result = probe(path)
+            self.assertEqual(result['program_id'], '0000000000125600')
+            self.assertEqual(result['remaster_version'], 7)
+            self.assertEqual(result['main_partition_sha256'], hashlib.sha256(data[:1536]).hexdigest())
+            self.assertFalse(result['revision_verified'])
+            self.assertEqual(path.read_bytes(), data)
+
 if __name__ == '__main__':
     unittest.main()

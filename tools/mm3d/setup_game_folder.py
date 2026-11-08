@@ -36,9 +36,19 @@ def validate(rom):
     return selected
 
 
+def main_ncch(header):
+    # Base offset of the main NCCH: an NCSD cartridge points at it in the
+    # partition table; a bare CXI image is the main NCCH itself at zero.
+    if header[0x100:0x104] == b'NCSD':
+        return struct.unpack('<I', header[0x120:0x124])[0] * 512
+    if header[0x100:0x104] == b'NCCH':
+        return 0
+    raise ValueError('Select a decrypted .3ds/.cci or a bare .cxi dump')
+
+
 def romfs_entries(rom, wanted=None):
-    # NCSD -> main NCCH -> standard IVFC level 3. Yields (path, bytes) for the
-    # wanted romfs paths (all of them when wanted is None), in table order.
+    # NCCH/NCSD -> main NCCH -> standard IVFC level 3. Yields (path, bytes) for
+    # the wanted romfs paths (all of them when wanted is None), in table order.
     with rom.open('rb') as stream:
         size = rom.stat().st_size
         def read(at, count):
@@ -47,7 +57,7 @@ def romfs_entries(rom, wanted=None):
             stream.seek(at); data = stream.read(count)
             if len(data) != count: raise ValueError('Short ROM read')
             return data
-        base = struct.unpack('<I', read(0x120,4))[0] * 512
+        base = main_ncch(read(0, 0x200))
         rb, rn = struct.unpack('<II', read(base+0x1b0,8))
         start, length = base + rb*512 + 0x1000, rn*512-0x1000
         if length <= 0: raise ValueError('Invalid RomFS')
@@ -87,7 +97,7 @@ def romfs_entries(rom, wanted=None):
 def title_id(rom):
     # Program id of the main NCCH, as the lowercase 16-hex-digit string used everywhere.
     with rom.open('rb') as stream:
-        base = struct.unpack('<I', _read(stream, 0x120, 4))[0] * 512
+        base = main_ncch(_read(stream, 0, 0x200))
         return '%016x' % struct.unpack('<Q', _read(stream, base+0x118, 8))[0]
 
 
@@ -124,7 +134,7 @@ def rus_overlay(block):
     return files
 
 
-def setup(root, restoration, selected_rom=None, copy_game=True, reference_game=False):
+def setup(root, restoration, selected_rom=None, copy_game=True, reference_game=False, text_language=None):
     rom = selected_rom or root/'game/mm3d.cci'
     if not copy_game and not reference_game and rom.resolve().parent != root.resolve() and rom.resolve() != (root/'game/mm3d.cci').resolve():
         raise ValueError('Place the game beside the application before starting setup.')
@@ -142,8 +152,18 @@ def setup(root, restoration, selected_rom=None, copy_game=True, reference_game=F
         original = stage/'setup/original'
         extract(rom,original)
         profile=json.loads((RESOURCES / 'setup-fingerprints.json').read_text(encoding='utf-8'))['titles'][title]
+        # A verified deck whose text is already Russian (the patched CXI) keeps
+        # that text; switching it would break the shipped font pairing.
+        deck_language=selected.get('text_language')
+        if text_language is not None and text_language not in ('rus','stock'):
+            raise ValueError('Text language must be rus or stock.')
+        if deck_language and text_language is not None and text_language!=deck_language:
+            raise ValueError("This game's text is already Russian; the language cannot be switched.")
+        language=text_language or deck_language or ('rus' if 'rus' in profile else 'stock')
+        if language=='rus' and 'rus' not in profile:
+            raise ValueError('The selected game has no Russian text pack.')
         mod_root=stage/('load/mods/'+title)
-        rus=rus_overlay(profile['rus']) if 'rus' in profile else None
+        rus=rus_overlay(profile['rus']) if language=='rus' else None
         if rus is not None:
             # The Russian archives become the expansion base, so the generated
             # eue.gmsg keeps the slot expansion but carries RU text.
@@ -151,7 +171,9 @@ def setup(root, restoration, selected_rom=None, copy_game=True, reference_game=F
             for path,data in rus.items():
                 if path.startswith(base):
                     write(original,'romfs/'+path,data)
-        build(original,restoration,mod_root,profile.get('rus',{}).get('messages'))
+        # stock passes None: build() derives the built-in text profile from the
+        # verified tree, exactly as before any language pack existed.
+        build(original,restoration,mod_root,profile['rus']['messages'] if rus is not None else None)
         if rus is not None:
             # Remaining RU files ride along as a plain mod copy; generated
             # output wins (eue.gmsg was built from these very bytes).
@@ -166,7 +188,7 @@ def setup(root, restoration, selected_rom=None, copy_game=True, reference_game=F
         obj['source_archive']='setup/original/romfs/layout/Joker.Main.Play.SubMenu.gar'
         obj['fade_source']='setup/original/romfs/layout/Joker.gar'
         p.write_text(json.dumps(obj,indent=2)+'\n')
-        (stage/'setup/ready.json').write_text(json.dumps({'version':1,'resource_version':RESOURCE_VERSION,'layout_version':layout_migration.VERSION,'rom_sha256':selected['main_partition_sha256'],'title_id':title})+'\n')
+        (stage/'setup/ready.json').write_text(json.dumps({'version':1,'resource_version':RESOURCE_VERSION,'layout_version':layout_migration.VERSION,'rom_sha256':selected['main_partition_sha256'],'title_id':title,'text_language':language})+'\n')
         if copy_game and not destination.exists():
             shutil.copyfile(rom, stage/'game-copy.cci')
             validate(stage/'game-copy.cci')
@@ -191,6 +213,8 @@ if __name__ == '__main__':
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--root',type=Path,required=True)
     p.add_argument('--restoration',type=Path,required=True)
+    p.add_argument('--text-language',choices=('rus','stock'),default=None,
+                   help='Europe games default to rus; stock keeps the built-in text. Rejected for other regions.')
     a=p.parse_args()
-    try: print('Prepared:',setup(a.root,a.restoration))
+    try: print('Prepared:',setup(a.root,a.restoration,text_language=a.text_language))
     except (ValueError,OSError) as error: p.exit(1,str(error)+'\n')

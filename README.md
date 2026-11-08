@@ -38,7 +38,7 @@ Majora ReMasked builds on [tgacquin’s DekUI](https://github.com/tgacquin/mm3d-
 ## Get started
 
 1. Install the package for your platform from [Releases](https://github.com/yuno-kojo/DekUI-Fork/releases).
-2. Select your own **Majora’s Mask 3D USA Rev 1 / v1.1** or **Europe (En,Fr,De,Es,It) Rev 1** ROM during setup. A European ROM can play in Russian.
+2. Select your own **Majora’s Mask 3D USA Rev 1 / v1.1** or **Europe (En,Fr,De,Es,It) Rev 1** ROM during setup. A European ROM offers a Russian / English text choice at setup; the verified Russian-patched Europe game file from the ZELDA64RUS v1.1 patch (`.cxi`) also installs directly with Russian text.
 3. Open Settings to choose a custom-texture folder, controller bindings, and HUD options.
 4. For Adult Link or Dark Link, open **Settings → Mods**, select your own supported OoT3D ROM and optional texture folder, then generate the mod before starting gameplay.
 5. For Twilight Princess Link, choose that player model in **Settings → Mods**, select your own GameCube Twilight Princess ROM (ISO, GCM, or RVZ) and optional texture folder, then generate the mod. Texture matching searches subfolders.

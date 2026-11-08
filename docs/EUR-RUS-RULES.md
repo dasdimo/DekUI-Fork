@@ -46,13 +46,24 @@
    нового языкового слота не добавляет.
 6. Dek-моды никогда не трогают локализованные копии `layout/*_English/*`
    — только base-файлы и `message/*`; RU-файлы с ними не конфликтуют.
+7. Проверенная RU-колода (2026-11-08): голый расшифрованный CXI
+   (NCCH-контейнер, без NCSD) из патча v1.1 — program_id
+   `0004000000125600`, main partition 668 921 856 B, sha256
+   `4cb0d107…4c9d`, Game Sequence Info region-byte `0x82` = `'E'`.
+   Текст в ней уже русский. Все читатели контейнера (probe_rom,
+   setup_game_folder, `game_folder.h`, DekuiGameSetup) принимают голый
+   NCCH: его заголовок лежит на том же смещении `0x100`, что и первый
+   NCSD-раздел.
 
 ## 3. Технические правила (архитектура)
 
 1. `supported-rom.json` v2: `{"schema":2,"roms":[{title_id,region,
    remaster_version,main_partition_bytes,main_partition_sha256,
-   description}…]}`; читатели выбирают запись по probe (program_id →
-   fallback bytes+sha), иначе прежняя ошибка unsupported.
+   description, text_language?}…]}`; читатели выбирают запись по probe
+   (program_id → fallback bytes+sha), иначе прежняя ошибка unsupported.
+   `text_language` задаёт колода (не пользователь): запись RU-колоды =
+   `"rus"`, переключать её нельзя (иначе кириллица встанет в латинский
+   шрифт).
 2. Единый C++-хелпер `src/mm3d/title_ids.h` (`IsMajoraMask3DTitle`) и
    Kotlin-объект `TitleIds`; литералы title id в коде запрещены (кроме
    определений констант). Пути `mods/<title_id>` строятся из runtime
@@ -70,9 +81,14 @@
    `rus/manifest.json` schema 1: источник (LoZMM3D PAL rev1 RUS v1.1,
    CRC32 943ED937/3A87ABAC), для каждого файла путь/размер/sha256 RU и
    стокового EUR; `code.bin`, `icon.icn`, `banner.bnr` — только метаданные.
-6. Для EUR профиль `rus` включён всегда (дефолт и есть цель выбора EUR);
-   UI-переключатель не строится. Игровая настройка языка не меняется:
-   слот «English» = русский текст.
+6. Для EUR язык текста выбирается при установке: desktop
+   `setup_game_folder.py --text-language rus|stock` (без флага — из
+   профиля/записи дек: `rus` для стоковой EUR, язык уже-RU колоды),
+   Android Setup показывает диалог «Русский / English» только для
+   верифицированных EUR-колод с паком `rus` и ещё не русским текстом
+   (`DekuiGameSetup.supportsRussian`, `prepare(..., russian)`). Запись
+   выбора — `user/setup/ready.json:text_language`. Игровая настройка
+   языка не меняется: слот «English» = выбранный текст.
 7. Дельта RU `code.bin` в дек не компонуется (дек-`code.bps` остаётся на
    стоковой EUR-код); в `rus/manifest.json` — запись-unknown про возможный
    будущий compose. Акторные `.lzs` вендорятся как romfs-файлы оверлея.
@@ -102,5 +118,9 @@
 3. `tools/mm3d/windows/smoke_setup.py` stage-режим: EUR .cci → успех и
    `stage/mods/0004000000125600/**`; USA .cci — идентичный выход
    (regression).
-4. Грep-инварианты: отсутствие литералов title id вне разрешённых мест
+4. E2E на реальных файлах: RU CXI пользователя → дефолтный setup даёт
+   `text_language:"rus"` и RU-файлы оверлея по манифесту; EUR .cci с
+   `--text-language stock` → eue.gmsg совпадает с EUR-English pin
+   профиля, RU-файлов в деке ноль.
+5. Грep-инварианты: отсутствие литералов title id вне разрешённых мест
    (`grep -rn 125500 src` и эквивалент для `125600` вне JSON).

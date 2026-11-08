@@ -7,7 +7,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 from release_setup import write
-from setup_game_folder import setup, validate, extract, RESOURCES
+from setup_game_folder import setup, validate, extract, main_ncch, title_id, RESOURCES
 
 USA_FACTS = {'program_id': '0004000000125500', 'remaster_version': 2,
              'main_partition_bytes': 654643200,
@@ -15,6 +15,9 @@ USA_FACTS = {'program_id': '0004000000125500', 'remaster_version': 2,
 EUR_FACTS = {'program_id': '0004000000125600', 'remaster_version': 2,
              'main_partition_bytes': 668647424,
              'main_partition_sha256': 'a26108ef34b49df421cca20eda1b4f38f596ebef9ac6b9c70a64245be055a722'}
+RUS_FACTS = {'program_id': '0004000000125600', 'remaster_version': 2,
+             'main_partition_bytes': 668921856,
+             'main_partition_sha256': '4cb0d107a3c244f6ad279da3edec9b22d9d623eb26d39a6a53e532c4db754c9d'}
 
 
 class GameFolderTests(unittest.TestCase):
@@ -26,11 +29,11 @@ class GameFolderTests(unittest.TestCase):
         for entry in data['roms']:
             self.assertEqual(entry['remaster_version'], 2)
             self.assertTrue(entry['description'])
-        facts = {e['title_id']: (e['main_partition_bytes'], e['main_partition_sha256']) for e in data['roms']}
-        self.assertEqual(facts[USA_FACTS['program_id']],
-                         (USA_FACTS['main_partition_bytes'], USA_FACTS['main_partition_sha256']))
-        self.assertEqual(facts[EUR_FACTS['program_id']],
-                         (EUR_FACTS['main_partition_bytes'], EUR_FACTS['main_partition_sha256']))
+        facts = {(e['title_id'], e['main_partition_bytes'], e['main_partition_sha256'])
+                 for e in data['roms']}
+        for e in (USA_FACTS, EUR_FACTS, RUS_FACTS):
+            self.assertIn((e['program_id'], e['main_partition_bytes'], e['main_partition_sha256']), facts)
+        self.assertEqual(len(facts), 3)
         # The fingerprints manifest keys message profiles by the same title ids.
         titles = json.loads((RESOURCES/'setup-fingerprints.json').read_text(encoding='utf-8'))['titles']
         self.assertEqual(set(titles), {e['title_id'] for e in data['roms']})
@@ -59,6 +62,26 @@ class GameFolderTests(unittest.TestCase):
         with patch('setup_game_folder.probe', return_value=anonymous):
             selected = validate(Path('mm3d.cci'))
         self.assertEqual(selected['title_id'], '0004000000125600')
+
+    def test_validate_selects_russian_deck_by_partition_identity(self):
+        # Same title id as the Europe deck; the distinct partition identity
+        # (the patched bare CXI) picks its own entry, not the stock Europe one.
+        with patch('setup_game_folder.probe', return_value=RUS_FACTS):
+            selected = validate(Path('mm3d.cxi'))
+        self.assertEqual(selected['title_id'], '0004000000125600')
+        self.assertEqual(selected['region'], 'eur')
+        self.assertEqual(selected['main_partition_sha256'], RUS_FACTS['main_partition_sha256'])
+
+    def test_title_id_reads_bare_cxi_main_ncch_at_zero(self):
+        with tempfile.TemporaryDirectory() as t:
+            path = Path(t) / 'deck.cxi'
+            data = bytearray(1024)
+            data[0x100:0x104] = b'NCCH'
+            struct.pack_into('<I', data, 0x104, 3)
+            struct.pack_into('<Q', data, 0x118, 0x0004000000125600)
+            path.write_bytes(data)
+            self.assertEqual(main_ncch(bytes(data[:0x200])), 0)
+            self.assertEqual(title_id(path), '0004000000125600')
 
     def test_setup_creates_empty_texture_folder(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -113,6 +136,54 @@ class GameFolderTests(unittest.TestCase):
                     side_effect=lambda rom,out:out.mkdir(parents=True)), patch('setup_game_folder.build') as made:
                 setup(root,root,rom)
             self.assertEqual(made.call_args.args[3],None)
+
+    def test_europe_setup_can_keep_builtin_text(self):
+        # The text-language switch: 'stock' skips every Russian file and lets
+        # build() derive the built-in Europe English profile from the tree.
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);rom=root/'original.cci';rom.write_bytes(b'original')
+            calls=[]
+            def fake_build(original,restoration,output,messages=None):
+                calls.append(messages)
+                (output/'romfs/message/eu').mkdir(parents=True)
+                (output/'romfs/message/eu/eue.gmsg').write_bytes(b'english-built-in')
+            with patch('setup_game_folder.validate', return_value={'title_id':'0004000000125600','main_partition_sha256':'a'*64}), patch('setup_game_folder.extract',
+                    side_effect=lambda rom,out:out.mkdir(parents=True)), patch('setup_game_folder.build', side_effect=fake_build):
+                setup(root,root,rom,text_language='stock')
+            self.assertEqual(calls,[None])
+            user=root/'user'
+            self.assertEqual(json.loads((user/'setup/ready.json').read_text(encoding='utf-8'))['text_language'],'stock')
+            mod=user/'load/mods/0004000000125600'
+            self.assertEqual((mod/'romfs/message/eu/eue.gmsg').read_bytes(),b'english-built-in')
+            vendored=json.loads((RESOURCES/'rus/manifest.json').read_text(encoding='utf-8'))
+            for entry in vendored['files']:
+                if entry['path']=='message/eu/eue.gmsg': continue
+                self.assertFalse((mod/'romfs'/entry['path']).exists(),entry['path'])
+
+    def test_russian_text_rejected_without_the_language_pack(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);rom=root/'original.cci';rom.write_bytes(b'original')
+            with patch('setup_game_folder.validate', return_value={'title_id':'0004000000125500','main_partition_sha256':'0'*64}), patch('setup_game_folder.extract',
+                    side_effect=lambda rom,out:out.mkdir(parents=True)), patch('setup_game_folder.build'):
+                with self.assertRaisesRegex(ValueError,'Russian'):
+                    setup(root,root,rom,text_language='rus')
+                with self.assertRaisesRegex(ValueError,'rus or stock'):
+                    setup(root,root,rom,text_language='de')
+            self.assertFalse((root/'user').exists())
+
+    def test_russian_deck_cannot_switch_to_stock_text(self):
+        # The verified RU-patched CXI declares its text language; asking for
+        # the built-in text on that deck would pair Russian with a Latin font.
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);rom=root/'original.cci';rom.write_bytes(b'original')
+            selected=dict(RUS_FACTS,title_id=RUS_FACTS['program_id'],
+                          main_partition_sha256=RUS_FACTS['main_partition_sha256'],text_language='rus')
+            with patch('setup_game_folder.validate', return_value=selected), patch('setup_game_folder.extract',
+                    side_effect=lambda rom,out:out.mkdir(parents=True)), patch('setup_game_folder.build'):
+                with self.assertRaisesRegex(ValueError,'already Russian'):
+                    setup(root,root,rom,text_language='stock')
+                setup(root,root,rom)  # no explicit choice: keeps rus
+            self.assertEqual(json.loads((root/'user/setup/ready.json').read_text(encoding='utf-8'))['text_language'],'rus')
 
     def test_russian_message_profile_matches_vendored_overlay(self):
         import classic_localized_text

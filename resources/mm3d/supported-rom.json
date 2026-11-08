@@ -16,6 +16,15 @@
       "main_partition_bytes": 668647424,
       "main_partition_sha256": "a26108ef34b49df421cca20eda1b4f38f596ebef9ac6b9c70a64245be055a722",
       "description": "Verified local decrypted Europe (En,Fr,De,Es,It) Rev 1 main partition."
+    },
+    {
+      "title_id": "0004000000125600",
+      "region": "eur",
+      "remaster_version": 2,
+      "main_partition_bytes": 668921856,
+      "main_partition_sha256": "4cb0d107a3c244f6ad279da3edec9b22d9d623eb26d39a6a53e532c4db754c9d",
+      "text_language": "rus",
+      "description": "Verified local Europe Rev 1 main partition patched to Russian (RUS patch v1.1) and distributed as a bare decrypted CXI; text is Russian."
     }
   ]
 }

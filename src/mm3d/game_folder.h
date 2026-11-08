@@ -17,7 +17,8 @@ namespace MM3D::GameFolder {
 // Verified Rev 1 main partitions; see resources/mm3d/supported-rom.json.
 inline constexpr auto UsaHash = "9c756279e3ec00bb9009f92ca2e7b9ec8b1fcdfcd9de057658b209caa24323da";
 inline constexpr auto EurHash = "a26108ef34b49df421cca20eda1b4f38f596ebef9ac6b9c70a64245be055a722";
-inline constexpr quint64 UsaSize = 654643200, EurSize = 668647424;
+inline constexpr auto EurRusHash = "4cb0d107a3c244f6ad279da3edec9b22d9d623eb26d39a6a53e532c4db754c9d";
+inline constexpr quint64 UsaSize = 654643200, EurSize = 668647424, EurRusSize = 668921856;
 inline QString LegacyRoot() {
     // AppImage mounts its executable read-only; use the folder holding the image.
     const auto appimage = qEnvironmentVariable("APPIMAGE");
@@ -90,7 +91,7 @@ inline QString ValidateSetup(const QString& user) {
     if(!ready.open(QIODevice::ReadOnly)) return QStringLiteral("Game setup is incomplete. Preserve your user folder and saves, then try a fresh application folder.");
     const auto setup=QJsonDocument::fromJson(ready.readAll()).object();
     const auto sha=setup[QStringLiteral("rom_sha256")].toString();
-    if(setup[QStringLiteral("version")].toInt()!=1 || (sha!=QString::fromLatin1(UsaHash) && sha!=QString::fromLatin1(EurHash)))
+    if(setup[QStringLiteral("version")].toInt()!=1 || (sha!=QString::fromLatin1(UsaHash) && sha!=QString::fromLatin1(EurHash) && sha!=QString::fromLatin1(EurRusHash)))
         return QStringLiteral("Game setup is incompatible. Keep your saves and prepare a new application folder.");
     if(setup[QStringLiteral("resource_version")].toInt()!=2 ||
        setup[QStringLiteral("layout_version")].toInt()!=2 ||
@@ -103,10 +104,19 @@ inline QString Validate() {
     if (!file.open(QIODevice::ReadOnly))
         return MissingGameMessage();
     const auto header = file.read(512);
-    if (header.size()!=512 || header.mid(0x100,4)!="NCSD") return QStringLiteral("Unsupported game container.");
+    if (header.size()!=512) return QStringLiteral("Unsupported game container.");
     const auto word = [&](int at) { return qFromLittleEndian<quint32>(header.constData()+at); };
-    const quint64 base=quint64(word(0x120))*512, size=quint64(word(0x124))*512;
-    if(base<512 || (size!=UsaSize && size!=EurSize) || base+size>quint64(file.size()) || !file.seek(base))
+    quint64 base=0, size=0;
+    if (header.mid(0x100,4)=="NCSD") {
+        base=quint64(word(0x120))*512, size=quint64(word(0x124))*512;
+        if (base<512) return QStringLiteral("Unsupported or incomplete game dump.");
+    } else if (header.mid(0x100,4)=="NCCH") {
+        // A bare CXI image is the main NCCH itself at offset zero.
+        size=quint64(word(0x104))*512;
+    } else {
+        return QStringLiteral("Unsupported game container.");
+    }
+    if((size!=UsaSize && size!=EurSize && size!=EurRusSize) || base+size>quint64(file.size()) || !file.seek(base))
         return QStringLiteral("Unsupported or incomplete game dump.");
     QCryptographicHash hash(QCryptographicHash::Sha256);
     for (quint64 remaining=size; remaining;) {
@@ -115,7 +125,8 @@ inline QString Validate() {
         hash.addData(bytes); remaining-=bytes.size();
     }
     const auto digest=hash.result().toHex();
-    if(digest!=QByteArray(UsaHash) && digest!=QByteArray(EurHash)) return QStringLiteral("Unsupported game revision/content. The supported decrypted USA or Europe Rev 1 dump is required.");
+    if(digest!=QByteArray(UsaHash) && digest!=QByteArray(EurHash) && digest!=QByteArray(EurRusHash))
+        return QStringLiteral("Unsupported game revision/content. The supported decrypted USA or Europe Rev 1 dump is required.");
     return ValidateSetup(User());
 }
 inline QString SelectedTitleId(const QString& root) {
@@ -133,9 +144,10 @@ inline QString SelectedTitleId(const QString& root) {
     QFile file(FindRom(root));
     if(file.open(QIODevice::ReadOnly)) {
         const auto header=file.read(512);
-        if(header.size()==512&&header.mid(0x100,4)=="NCSD") {
-            const quint64 base=quint64(qFromLittleEndian<quint32>(header.constData()+0x120))*512;
-            if(base>=512&&file.seek(base)) {
+        if(header.size()==512&&(header.mid(0x100,4)=="NCSD"||header.mid(0x100,4)=="NCCH")) {
+            const quint64 base=header.mid(0x100,4)=="NCSD"
+                ? quint64(qFromLittleEndian<quint32>(header.constData()+0x120))*512 : 0;
+            if((base>=512||header.mid(0x100,4)=="NCCH")&&file.seek(base)) {
                 const auto ncch=file.read(512);
                 if(ncch.size()==512&&ncch.mid(0x100,4)=="NCCH") {
                     const quint64 id=qFromLittleEndian<quint64>(ncch.constData()+0x118);

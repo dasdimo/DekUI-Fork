@@ -93,13 +93,15 @@ object DekuiAndroidSetup {
     /** Basic container check before handing a selected game to native loading. */
     fun looksLikeMm3dContainer(context: Context, uri: Uri): Boolean {
         val name = DocumentFile.fromSingleUri(context, uri)?.name?.lowercase() ?: return false
-        if (!name.endsWith(".cci") && !name.endsWith(".3ds")) return false
+        if (!name.endsWith(".cci") && !name.endsWith(".3ds") && !name.endsWith(".cxi")) return false
         return try {
-            // NCSD is the standard 3DS container signature at offset 0x100.
+            // NCSD is the standard 3DS cartridge container; NCCH at the same
+            // offset is a bare decrypted CXI image. Both are accepted.
             context.contentResolver.openInputStream(uri)?.use { input ->
                 if (input.skip(0x100) != 0x100L) return false
                 val magic = ByteArray(4)
-                input.read(magic) == 4 && magic.contentEquals(byteArrayOf('N'.code.toByte(), 'C'.code.toByte(), 'S'.code.toByte(), 'D'.code.toByte()))
+                input.read(magic) == 4 && (magic.contentEquals(byteArrayOf('N'.code.toByte(), 'C'.code.toByte(), 'S'.code.toByte(), 'D'.code.toByte())) ||
+                    magic.contentEquals(byteArrayOf('N'.code.toByte(), 'C'.code.toByte(), 'C'.code.toByte(), 'H'.code.toByte())))
             } ?: false
         } catch (_: IOException) {
             false
