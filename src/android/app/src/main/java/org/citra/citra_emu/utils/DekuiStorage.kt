@@ -14,29 +14,50 @@ import org.citra.citra_emu.NativeLibrary
 
 /** Shared, user-visible game data. App runtime libraries remain in app-private storage. */
 object DekuiStorage {
+    private const val ROOT_KEY="shared-root-path"
+    fun isShared(context:Context)=context.getSharedPreferences("dekui-storage",Context.MODE_PRIVATE).getBoolean("shared-v1",false)
     fun sharedRoot()=File(Environment.getExternalStorageDirectory(),"mm3dport")
     fun hasAccess(context:Context)=if(Build.VERSION.SDK_INT>=30)Environment.isExternalStorageManager()
         else androidx.core.content.ContextCompat.checkSelfPermission(context,android.Manifest.permission.WRITE_EXTERNAL_STORAGE)==android.content.pm.PackageManager.PERMISSION_GRANTED
     fun root(context:Context):File {
         val prefs=context.getSharedPreferences("dekui-storage",Context.MODE_PRIVATE)
-        return if(prefs.getBoolean("shared-v1",false))sharedRoot() else File(context.filesDir,"dekui")
+        if(!prefs.getBoolean("shared-v1",false)) return File(context.filesDir,"dekui")
+        val configured=prefs.getString(ROOT_KEY,"").orEmpty()
+        return if(configured.isNotEmpty())File(configured) else sharedRoot()
     }
     fun game(context:Context)=if(context.getSharedPreferences("dekui-storage",Context.MODE_PRIVATE).getBoolean("shared-v1",false))
         File(root(context),"game/game.cci") else File(context.filesDir,"dekui-game/game.cci")
     fun migrate(context:Context){
         check(hasAccess(context)){"Allow file access to use Internal storage/mm3dport"}
-        val target=sharedRoot()
-        if(context.getSharedPreferences("dekui-storage",Context.MODE_PRIVATE).getBoolean("shared-v1",false)) {
-            check(File(target,".dekui-storage-v1").isFile){"The mm3dport data folder is missing. Restore your current folder before starting; the older private backup was retained."}
+        val prefs=context.getSharedPreferences("dekui-storage",Context.MODE_PRIVATE)
+        val already=prefs.getBoolean("shared-v1",false)
+        val target=if(already)root(context) else sharedRoot()
+        if(already) {
+            check(File(target,".dekui-storage-v1").isFile){"The game data folder is missing. Restore your current folder before starting; the older private backup was retained."}
         } else DekuiStorageMigration.migrate(File(context.filesDir,"dekui"),File(context.filesDir,"dekui-game/game.cci"),target)
-        check(context.getSharedPreferences("dekui-storage",Context.MODE_PRIVATE).edit().putBoolean("shared-v1",true).commit())
+        check(prefs.edit().putBoolean("shared-v1",true).commit())
         check(PreferenceManager.getDefaultSharedPreferences(context).edit().putString(PermissionsHandler.CITRA_DIRECTORY,Uri.fromFile(target).toString()).commit())
         NativeLibrary.setUserDirectory(target.absolutePath)
         DirectoryInitialization.resetCitraDirectoryState()
         check(DirectoryInitialization.start()==DirectoryInitialization.DirectoryInitializationState.CITRA_DIRECTORIES_INITIALIZED){"Shared game data could not be initialized"}
-        NativeLibrary.playTimeManagerInit()
+        NativeLibrary.playTimeManagerInit();
         controls(context)
     }
+    /** Move all shared game data to another folder on internal storage. The old root is kept as a backup.
+     *  The running process keeps using the previous directory; pendingRestart tells the UI to ask for a relaunch. */
+    fun changeRoot(context:Context,target:File) {
+        check(hasAccess(context)){"Allow file access to move game data"}
+        val prefs=context.getSharedPreferences("dekui-storage",Context.MODE_PRIVATE)
+        check(prefs.getBoolean("shared-v1",false)){"Complete the first-run game setup before moving game data"}
+        val storage=Environment.getExternalStorageDirectory().absolutePath
+        val path=target.absolutePath
+        check(path.length>storage.length+1&&path.startsWith(storage+File.separator)){"Choose a folder below Internal storage, not the storage root"}
+        check(target.isDirectory||target.mkdirs()){"Cannot create the chosen game data folder"}
+        DekuiStorageMigration.reparent(root(context),target)
+        check(prefs.edit().putString(ROOT_KEY,target.absolutePath).commit()){"Could not store the new game data folder"}
+    }
+    fun pendingRestart(context:Context)=context.getSharedPreferences("dekui-storage",Context.MODE_PRIVATE)
+        .getBoolean("shared-v1",false)&&root(context).absolutePath!=NativeLibrary.getUserDirectory()
     fun hasSharedBindings(context:Context):Boolean {
         val file=File(root(context),"config/android-controls.json")
         if(!file.isFile)return false

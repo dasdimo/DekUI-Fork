@@ -28,7 +28,8 @@ and returns to startup. Quit on startup exits the application.
 
 ## Storage and packaging
 
-- Android: Internal storage/mm3dport. Existing data migrates through a staged,
+- Android: Internal storage/mm3dport by default, relocatable to any folder under
+  Internal storage from Settings. Existing data migrates through a staged,
   hash-verified copy; original private data remains available for recovery.
 - macOS: ~/Library/Application Support/DekUI Fork. Existing portable data is
   copied and verified before switching roots.

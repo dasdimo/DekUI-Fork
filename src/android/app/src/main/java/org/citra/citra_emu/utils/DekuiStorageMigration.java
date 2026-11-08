@@ -33,6 +33,27 @@ public final class DekuiStorageMigration {
         }else throw new IOException("Unsupported game data entry: "+source);
     }
     private static void removeStage(File file){File[] children=file.listFiles();if(children!=null)for(File child:children)removeStage(child);file.delete();}
+    /** Move the shared game-data root to another folder. The old root is kept as a backup. */
+    public static void reparent(File source,File target) throws Exception {
+        if(Files.isSymbolicLink(target.toPath()))throw new IOException("Game data folder must not be a symbolic link");
+        if(target.getCanonicalPath().equals(source.getCanonicalPath()))return;
+        String sourcePath=source.getCanonicalPath(),targetPath=target.getCanonicalPath();
+        if(targetPath.startsWith(sourcePath+File.separator)||sourcePath.startsWith(targetPath+File.separator))
+            throw new IOException("Game data folders must not be nested");
+        File marker=new File(target,".dekui-storage-v1");
+        if(marker.isFile())return; // adopt an already-populated game data folder
+        if(target.exists()){
+            String[] names=target.list();if(names==null||names.length!=0)throw new IOException("The chosen folder already contains files. Choose an empty folder.");
+        }
+        File stage=new File(target.getParentFile(),".dekui-root-migration-"+UUID.randomUUID());
+        try{
+            if(!stage.mkdirs())throw new IOException("Cannot create staging folder for the new game data location");
+            if(source.isDirectory())for(File child:source.listFiles())copy(child,new File(stage,child.getName()),0);
+            try(FileOutputStream out=new FileOutputStream(new File(stage,".dekui-storage-v1"))){out.write("1\n".getBytes("UTF-8"));out.getFD().sync();}
+            if(target.exists()&&!target.delete())throw new IOException("Cannot publish the new game data folder");
+            if(!stage.renameTo(target))throw new IOException("Cannot publish the new game data folder");
+        }finally{if(stage.exists())removeStage(stage);}
+    }
     public static void migrate(File source,File game,File target) throws Exception {
         if(Files.isSymbolicLink(target.toPath()))throw new IOException("Game data folder must not be a symbolic link");
         File marker=new File(target,".dekui-storage-v1");

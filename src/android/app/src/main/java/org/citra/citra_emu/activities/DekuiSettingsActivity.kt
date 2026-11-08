@@ -62,6 +62,29 @@ class DekuiSettingsActivity : AppCompatActivity() {
     private val pakPicker=registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri->
         if(uri!=null)generateMod(pak=uri)
     }
+    private val rootPicker=registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri->
+        if(uri!=null)moveGameRoot(uri)
+    }
+    private var movingRoot=false
+    private fun moveGameRoot(uri:android.net.Uri) {
+        if(movingRoot)return
+        val document=android.provider.DocumentsContract.getTreeDocumentId(uri).orEmpty()
+        if(!document.startsWith("primary:")) { error(IllegalStateException("Choose a folder on the phone's internal storage"));return }
+        val target=java.io.File(android.os.Environment.getExternalStorageDirectory(),document.removePrefix("primary:"))
+        if(!DekuiStorage.hasAccess(this)) { error(IllegalStateException("Allow file access before moving game data"));return }
+        movingRoot=true
+        val dialog=android.app.ProgressDialog(this).apply { setTitle("Moving game data");setMessage("Copying saves, mods and settings… the current folder is kept as a backup.");setCancelable(false);show() }
+        lifecycleScope.launch {
+            val result=withContext(Dispatchers.IO){runCatching { DekuiStorage.changeRoot(this@DekuiSettingsActivity,target) }}
+            movingRoot=false;dialog.dismiss()
+            result.onSuccess {
+                android.app.AlertDialog.Builder(this@DekuiSettingsActivity).setTitle("Game data moved")
+                    .setMessage("The game folder is now:\n${target.path}\n\nThe app must close so the emulator can start with the new location. Open Majora ReMasked again from your launcher.")
+                    .setCancelable(false).setPositiveButton("Close app"){ android.os.Process.killProcess(android.os.Process.myPid()) }.show()
+            }.onFailure { error(it) }
+            render()
+        }
+    }
     @Suppress("DEPRECATION")
     private fun generateMod(dark:Boolean=false,twilight:Boolean=false,pak:android.net.Uri?=null) {
         if(generatingMod)return
@@ -220,7 +243,14 @@ class DekuiSettingsActivity : AppCompatActivity() {
                     render()
                 }
                 note("Applies when you start the game. Settings menus remain in English.")
-                note("Game data: Internal storage/mm3dport\nHUD settings, controller bindings, saves and mods are stored here.")
+                val dataRoot=DekuiStorage.root(this)
+                note("Game data: ${dataRoot.path}\nHUD settings, controller bindings, saves and mods are stored here.")
+                if(DekuiStorage.isShared(this)) {
+                    addButton("Move game data folder") { rootPicker.launch(android.net.Uri.parse("content://com.android.externalstorage.documents/tree/primary%3A")) }
+                    note("Moving copies everything into the folder you choose and keeps the old folder as a backup. Only folders in the phone's internal storage are offered.")
+                    if(DekuiStorage.pendingRestart(this))
+                        addButton("Restart app to apply the new game folder") { finishAffinity();android.os.Process.killProcess(android.os.Process.myPid()) }
+                }
                 iconSelection()
                 bool("Show frame rate","show_performance")
                 slider("Menu size",size.toFloat(),0f,40f) { update("android_menu_text_size" to it.toInt());size=it.toInt();render() }

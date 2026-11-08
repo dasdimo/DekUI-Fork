@@ -4,7 +4,7 @@ Use the Android ARM64 package from Releases. Desktop packages have separate inst
 
 ## Base game
 
-Select your own MM3D USA Rev 1 (v1.1) ROM. Generated game data, settings, saves, and mods are stored in Internal storage/mm3dport. Grant file access when prompted. Choose the folder containing your MM3D custom textures in Settings; Android grants access to that folder through its system picker. You can use an existing Azahar texture directory instead of copying an entire pack.
+Select your own MM3D USA Rev 1 (v1.1) or Europe (English) Rev 1 (v1.1) ROM; the Europe base also offers the ZELDA64RUS Russian translation. Generated game data, settings, saves, and mods are stored in Internal storage/mm3dport by default; Settings → General → Move game data folder relocates everything to any folder under Internal storage, keeping the previous folder as a backup. Grant file access when prompted. Choose the folder containing your MM3D custom textures in Settings; Android grants access to that folder through its system picker. You can use an existing Azahar texture directory instead of copying an entire pack.
 
 Use the in-game file-select screen to load saves. A save state restores emulated memory and may restore an old model even after changing generated mod files.
 

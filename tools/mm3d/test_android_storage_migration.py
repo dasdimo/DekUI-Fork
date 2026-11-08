@@ -29,6 +29,20 @@ public class MigrationCheck {public static void main(String[] args)throws Except
  File linked=new File(root,"linked");Files.createSymbolicLink(linked.toPath(),target.toPath());
  try{DekuiStorageMigration.migrate(source,game,linked);throw new AssertionError("symlink accepted");}catch(IOException expected){}
  }
+ File moved=new File(root,"moved");
+ DekuiStorageMigration.reparent(target,moved);
+ if(!java.util.Arrays.equals(Files.readAllBytes(new File(target,"game/game.cci").toPath()),Files.readAllBytes(new File(moved,"game/game.cci").toPath())))throw new AssertionError("reparent changed game bytes");
+ if(!new File(moved,".dekui-storage-v1").isFile()||!new File(moved,"save.bin").isFile())throw new AssertionError("reparent dropped data");
+ if(!new File(target,"game/game.cci").isFile())throw new AssertionError("reparent deleted the source root");
+ try{DekuiStorageMigration.reparent(moved,new File(root,"existing"));throw new AssertionError("reparent into a non-empty folder accepted");}catch(IOException expected){}
+ try{DekuiStorageMigration.reparent(moved,new File(moved,"inside"));throw new AssertionError("reparent into a nested folder accepted");}catch(IOException expected){}
+ DekuiStorageMigration.reparent(moved,target);
+ if(!DekuiStorageMigration.hasPreparedGame(target))throw new AssertionError("reparent round trip lost prepared data");
+ DekuiStorageMigration.reparent(target,target);
+ if(!System.getProperty("os.name").startsWith("Windows")){
+ File linkedRoot=new File(root,"linked-root");Files.createSymbolicLink(linkedRoot.toPath(),target.toPath());
+ try{DekuiStorageMigration.reparent(moved,linkedRoot);throw new AssertionError("reparent symlink accepted");}catch(IOException expected){}
+ }
 }}''')
             source=repo/'src/android/app/src/main/java/org/citra/citra_emu/utils/DekuiStorageMigration.java'
             subprocess.run([javac,'-d',str(root),str(source),str(test)],check=True,capture_output=True)
