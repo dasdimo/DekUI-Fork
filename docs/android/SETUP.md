@@ -30,10 +30,11 @@ Disk shader cache is currently disabled in this preview configuration after test
 
 ## Installing alongside other builds
 
-This fork builds as `io.github.yukojp.dekuifork`, so it installs beside the
-original Majora ReMasked release instead of replacing it. Android keeps each
-app's data separate: close the other app first, then grant file access to the
-same Internal storage/mm3dport folder. The new app reuses its prepared game,
+This fork builds as `io.github.yukojp.dekuifork` and appears in the launcher
+as **Majora ReMasked Fork**, so it installs beside the original Majora
+ReMasked release instead of replacing it. Android keeps each app's data
+separate: close the other app first, then grant file access to the same
+Internal storage/mm3dport folder. The new app reuses its prepared game,
 saves, generated mods, HUD, and controller bindings. Reselect external texture
 folders; Android folder grants belong to the other app ID. Select the OoT3D
 source again only when regenerating a mod.

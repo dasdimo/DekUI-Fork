@@ -38,7 +38,7 @@ No game ROM, imported player model, imported voices, save file, or personal text
 
 These appearance mods need broader gameplay testing. Some masks, facial expressions, and attachments still need broader testing with Adult Link. Texture replacement depends on a matching texture being present in the selected pack. The experimental Cheats page can remain disabled when its live save-layout check does not match; it is not advertised as a reliable save editor.
 
-The Android build uses `io.github.yukojp.dekuifork` and installs alongside the original Majora ReMasked app rather than replacing it. Grant file access to the same Internal storage/mm3dport folder to reuse existing saves, generated mods, HUD settings, and shared controller bindings, and reselect external texture folders; folder grants belong to the other app's ID. Close the other app before switching.
+The Android build uses `io.github.yukojp.dekuifork` and appears in the launcher as **Majora ReMasked Fork**, installing alongside the original Majora ReMasked app rather than replacing it. Grant file access to the same Internal storage/mm3dport folder to reuse existing saves, generated mods, HUD settings, and shared controller bindings, and reselect external texture folders; folder grants belong to the other app's ID. Close the other app before switching.
 
 ## Credits and license
 
