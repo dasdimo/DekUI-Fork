@@ -116,6 +116,8 @@ void EmuThread::run() {
     bool was_active = false;
 #ifdef ENABLE_MM3D_PRESENTATION
     auto game_language_config = Service::CFG::GetModule(system);
+    MM3D::PlayerSettings::language_profile.store(MM3D::PlayerSettings::ProfileFromRecordFile(
+        FileUtil::GetUserPath(FileUtil::UserPath::User) + "setup/ready.json"));
     MM3D::PlayerSettings::InitializeGameLanguage(*game_language_config);
     const auto apply_game_language = [&] {
         MM3D::PlayerSettings::ApplyPendingGameLanguage(*game_language_config);

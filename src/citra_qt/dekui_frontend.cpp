@@ -50,6 +50,7 @@
 #include "mm3d/camera_distance.h"
 #include "mm3d/diagnostics.h"
 #include "mm3d/game_folder.h"
+#include "mm3d/game_language.h"
 #include "mm3d/game_setup.h"
 #include "mm3d/player_settings.h"
 #include "mm3d/pictograph.h"
@@ -783,12 +784,24 @@ class SettingsDialog final : public QDialog {
         box->setSpacing(14);
         Heading(box, page);
         if (page == QStringLiteral("General")) {
-            const int language = DesktopImport::GameLanguage();
-            Choice(QStringLiteral("Game language"),
-                   {QStringLiteral("English"), QStringLiteral("Français"), QStringLiteral("Español")},
-                   language == 2 ? 1 : language == 5 ? 2 : 0, [this](int index) {
-                       constexpr int languages[]{1, 2, 5};
-                       if (!DesktopImport::SetGameLanguage(languages[index])) {
+            const int profile = DesktopImport::LanguageProfile();
+            int language_count = 0;
+            const int* languages = MM3D::PlayerSettings::LanguageValuesFor(profile, language_count);
+            QStringList names{QStringLiteral("English"), QStringLiteral("Français")};
+            if (profile == MM3D::PlayerSettings::EurStockLanguages ||
+                profile == MM3D::PlayerSettings::EurRussianLanguages)
+                names << QStringLiteral("Deutsch") << QStringLiteral("Español")
+                      << QStringLiteral("Italiano");
+            else
+                names << QStringLiteral("Español");
+            if (profile == MM3D::PlayerSettings::EurRussianLanguages)
+                names[0] = QStringLiteral("Русский"); // the pack renders in English mode.
+            const int current = DesktopImport::GameLanguage();
+            int selected = 0;
+            for (int i = 0; i < language_count; ++i)
+                if (current == languages[i]) selected = i;
+            Choice(QStringLiteral("Game language"), names, selected, [this, languages](int index) {
+                if (!DesktopImport::SetGameLanguage(languages[index])) {
                            QMessageBox::warning(this, QStringLiteral("Game language"),
                                                 QStringLiteral("Could not save the game language. Try selecting it again."));
                            Render();

@@ -53,6 +53,7 @@
 #include "mm3d/bloom_sampling.h"
 #include "mm3d/fog.h"
 #include "mm3d/bottle_healing.h"
+#include "mm3d/game_language.h"
 #include "mm3d/player_settings.h"
 #include "mm3d/settings.h"
 #include "mm3d/restoration_hud.h"
@@ -1059,13 +1060,25 @@ void Overlay::Draw(vk::CommandBuffer command, vk::Framebuffer framebuffer,
             if(AndroidMenuStyle::Checkbox("Show frame rate",&state.settings.show_performance))
                 state.settings.Save(state.directory+"presentation.json");
             settings_size_control();
-            constexpr int languages[]={1,2,5}; // Native English, French, Spanish.
+            const int language_profile=PlayerSettings::language_profile.load();
+            const bool european=language_profile==PlayerSettings::EurStockLanguages||
+                                language_profile==PlayerSettings::EurRussianLanguages;
+            int language_count=0;
+            const int* language_values=PlayerSettings::LanguageValuesFor(language_profile,language_count);
+            QStringList language_names{QStringLiteral("English"),QStringLiteral("Français")};
+            if(european)
+                language_names<<QStringLiteral("Deutsch")<<QStringLiteral("Español")<<QStringLiteral("Italiano");
+            else
+                language_names<<QStringLiteral("Español");
+            if(language_profile==PlayerSettings::EurRussianLanguages)
+                language_names[0]=QStringLiteral("Русский");
+            const QString language_items=language_names.join(QChar(QChar::Null))+QChar(QChar::Null);
             int selected=0;
-            for(int i=0;i<3;++i)if(PlayerSettings::game_language.load()==languages[i])selected=i;
-            if(AndroidMenuStyle::Combo("Game language",&selected,"English\0Français\0Español\0")) {
-                PlayerSettings::game_language.store(languages[selected]);
+            for(int i=0;i<language_count;++i)if(PlayerSettings::game_language.load()==language_values[i])selected=i;
+            if(AndroidMenuStyle::Combo("Game language",&selected,language_items.toUtf8().constData())) {
+                PlayerSettings::game_language.store(language_values[selected]);
                 PlayerSettings::game_language_status.store(1);
-                PlayerSettings::set_game_language.store(languages[selected]);
+                PlayerSettings::set_game_language.store(language_values[selected]);
             }
             hover_help("Changes the game's text language. Restart Majora ReMasked to apply. Settings menus remain in English.");
             if(PlayerSettings::game_language_status.load()==3)

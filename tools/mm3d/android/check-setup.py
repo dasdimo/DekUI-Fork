@@ -10,6 +10,7 @@ for token in ("DocumentFile.fromTreeUri", "installDefaults", "looksLikeMm3dConta
 contract = (root / "src/android/app/src/main/java/org/citra/citra_emu/contracts/OpenFileResultContract.kt").read_text(encoding='utf-8')
 assert "CATEGORY_OPENABLE" in contract and "FLAG_GRANT_PERSISTABLE_URI_PERMISSION" in contract
 game = (root / "src/android/app/src/main/java/org/citra/citra_emu/utils/DekuiGameSetup.kt").read_text(encoding='utf-8')
-for token in ('optJSONObject("rus")', 'Russian overlay content drifted'):
+for token in ('optJSONObject("rus")', 'Russian overlay content drifted',
+              'setup/ready.json', '"text_language"'):
     assert token in game
 print("Android setup and SAF checks passed")

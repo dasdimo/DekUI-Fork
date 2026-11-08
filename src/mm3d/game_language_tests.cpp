@@ -97,5 +97,38 @@ int main() {
     const auto previous = startup.current;
     Check(!SaveGameLanguage(startup, 1) && startup.current == previous,
           "startup failure did not retain the saved language");
+    // The installed deck's record decides which options every surface lists.
+    Check(LanguageProfileFromRecord("{\"title_id\": \"0004000000125500\"}") == UsLanguages,
+          "USA record must keep the USA list");
+    Check(LanguageProfileFromRecord(
+              "{\"title_id\": \"0004000000125600\", \"text_language\": \"rus\"}") ==
+              EurRussianLanguages,
+          "Europe record with the Russian pack must select the Russian profile");
+    Check(LanguageProfileFromRecord(
+              "{\"title_id\": \"0004000000125600\", \"text_language\": \"stock\"}") ==
+              EurStockLanguages,
+          "Europe record without the pack must keep the built-in profile");
+    Check(LanguageProfileFromRecord("{\"title_id\": \"0004000000125600\"}") == EurRussianLanguages,
+          "Europe record without a text field follows Setup's own default");
+    Check(LanguageProfileFromRecord("") == UsLanguages,
+          "no record means no installed deck to override");
+    Check(ProfileFromRecordFile("no-such-setup/ready.json") == UsLanguages,
+          "missing record file keeps the USA list");
+    int count = 0;
+    Check(LanguageValuesFor(UsLanguages, count)[2] == 5 && count == 3, "USA option table");
+    Check(LanguageValuesFor(EurRussianLanguages, count)[2] == 3 &&
+              LanguageValuesFor(EurStockLanguages, count)[4] == 4 && count == 5,
+          "Europe option table offers all five renderable CFG ids");
+    language_profile.store(EurRussianLanguages);
+    Check(SupportedLanguage(3) && !SupportedLanguage(6), "EUR profile accepts its five CFG ids");
+    Config rus;
+    rus.current = static_cast<Language>(2); // Stale French from an earlier Europe run.
+    InitializeGameLanguage(rus);
+    Check(set_game_language.load() == 1 && game_language_status.load() == 1,
+          "a Russian deck queues English mode at boot");
+    ApplyPendingGameLanguage(rus);
+    Check(rus.current == English && game_language.load() == 1 && game_language_status.load() == 2,
+          "a Russian deck repairs its language to English mode once");
+    language_profile.store(UsLanguages);
     std::puts("Game language persistence and failure recovery checks passed.");
 }

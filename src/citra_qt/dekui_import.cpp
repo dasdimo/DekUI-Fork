@@ -171,18 +171,25 @@ QString NativeSettingsPath() {
                ? root + QStringLiteral("/user/config/qt-config.ini")
                : root + QStringLiteral("/desktop-native.ini");
 }
+int LanguageProfile() {
+    auto& system = Core::System::GetInstance();
+    if (system.IsPoweredOn()) return PlayerSettings::language_profile.load();
+    // With power off the boot path has not run for this deck; ask the folder
+    // what language pack its installed record (or card default) implies.
+    return GameFolder::LanguageProfileFromDeck(GameFolder::Root());
+}
 int GameLanguage() {
     auto& system = Core::System::GetInstance();
     if (system.IsPoweredOn()) return PlayerSettings::game_language.load();
     QSettings ini(NativeSettingsPath(), QSettings::IniFormat);
     const int pending = ini.value(QStringLiteral("System/startup_game_language"), -1).toInt();
-    if (PlayerSettings::SupportedLanguage(pending)) return pending;
+    if (PlayerSettings::SupportedLanguage(pending, LanguageProfile())) return pending;
     if (!QFileInfo::exists(GameFolder::Root() + QStringLiteral("/user/setup/ready.json")))
         return 1;
     return Service::CFG::GetModule(system)->GetSystemLanguage();
 }
 bool SetGameLanguage(int language) {
-    if (!PlayerSettings::SupportedLanguage(language)) return false;
+    if (!PlayerSettings::SupportedLanguage(language, LanguageProfile())) return false;
     auto& system = Core::System::GetInstance();
     if (system.IsPoweredOn()) {
         PlayerSettings::game_language_status.store(1);

@@ -235,6 +235,7 @@ object DekuiGameSetup {
                 if (!file.isFile) { file.parentFile!!.mkdirs(); file.writeBytes(bytes) }
             }
             val target = File(root,"load/mods/" + titleKey!!)
+            val freshInstall = !target.exists()
             // Retain an existing installation, including the user's edited layouts.
             if (!target.exists()) {
                 target.parentFile!!.mkdirs(); check(mods.renameTo(target))
@@ -260,6 +261,19 @@ object DekuiGameSetup {
             for ((key, bytes) in sources) if (key.startsWith("original/")) {
                 val file = File(root,"config/mm3d-original").child(key.removePrefix("original/"))
                 if (!file.exists()) { file.parentFile!!.mkdirs(); file.writeBytes(bytes) }
+            }
+            // Boot and the settings screens read this record to learn which text
+            // language the installed deck renders; same location and fields as the
+            // desktop Setup record. Only a first install records the choice,
+            // because re-imports keep the files (and text) already installed.
+            if (freshInstall) {
+                val record = File(root, "setup/ready.json")
+                record.parentFile!!.mkdirs()
+                record.writeText(JSONObject()
+                    .put("version", 1)
+                    .put("title_id", titleKey!!)
+                    .put("text_language", if (rusBlock != null) "rus" else "stock")
+                    .toString())
             }
         } finally { stage.deleteRecursively() }
     }

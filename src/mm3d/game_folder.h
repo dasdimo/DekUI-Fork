@@ -10,6 +10,7 @@
 #include <QtEndian>
 #include <QStandardPaths>
 #include "mm3d/desktop_storage.h"
+#include "mm3d/game_language.h"
 #include "mm3d/mods_location.h"
 #include "mm3d/title_ids.h"
 
@@ -157,5 +158,22 @@ inline QString SelectedTitleId(const QString& root) {
         }
     }
     return ModsLocation::InstalledTitleId(QDir(user).absoluteFilePath(QStringLiteral("load")));
+}
+inline int LanguageProfileFromDeck(const QString& root) {
+    // Which language list the installed deck can actually render, matching the
+    // values of MM3D::PlayerSettings::LanguageProfile. Title resolution follows
+    // SelectedTitleId. An installed Europe deck records its text language in
+    // setup/ready.json; a ready.json without the record was built by an older
+    // Setup, which only ever produced built-in text. An uninstalled Europe
+    // card defaults to Russian exactly like Setup itself does.
+    const QString title=SelectedTitleId(root);
+    bool ok=false;
+    const quint64 id=title.toULongLong(&ok,16);
+    if(!ok||id!=MajoraMask3DEurTitle) return 0;
+    QFile ready(QDir(QDir(root).absoluteFilePath(QStringLiteral("user")))
+                   .filePath(QStringLiteral("setup/ready.json")));
+    if(!ready.open(QIODevice::ReadOnly)) return 2; // uninstalled card: Setup's own default
+    return PlayerSettings::LanguageProfileFromRecord(
+        QString::fromUtf8(ready.readAll()).toStdString());
 }
 }

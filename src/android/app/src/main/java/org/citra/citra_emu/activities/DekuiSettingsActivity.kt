@@ -236,9 +236,16 @@ class DekuiSettingsActivity : AppCompatActivity() {
         root.addView(body,LinearLayout.LayoutParams(-1,0,1f))
         when(page) {
             "General" -> {
-                val languages=listOf(1,2,5)
+                val profile=NativeLibrary.getDekuiLanguageProfile()
+                val languages=if(profile>0)listOf(1,2,3,5,4)else listOf(1,2,5) // CFG ids; 4 is Italian.
+                val languageNames=when(profile) {
+                    // The Russian pack renders through English mode.
+                    2->listOf("Русский","Français","Deutsch","Español","Italiano")
+                    1->listOf("English","Français","Deutsch","Español","Italiano")
+                    else->listOf("English","Français","Español")
+                }
                 val language=NativeLibrary.getDekuiGameLanguage()
-                choice("Game language",listOf("English","Français","Español"),languages.indexOf(language).coerceAtLeast(0)) { index->
+                choice("Game language",languageNames,languages.indexOf(language).coerceAtLeast(0)) { index->
                     if(!NativeLibrary.setDekuiGameLanguage(languages[index])) {
                         error(IllegalStateException("Could not save the game language. Try selecting it again."))
                     }

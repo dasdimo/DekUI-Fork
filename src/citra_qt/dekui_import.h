@@ -6,6 +6,7 @@ class QWidget;
 namespace MM3D::DesktopImport {
 QString NativeSettingsPath();
 QString PictographBinding();
+int LanguageProfile();
 int GameLanguage();
 bool SetGameLanguage(int language);
 void ApplyPendingSettings();

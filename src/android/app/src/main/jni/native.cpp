@@ -367,6 +367,8 @@ static Core::System::ResultStatus RunCitra(const std::string& filepath) {
     system.RegisterCoreLoopThreadId();
 #ifdef ENABLE_MM3D_PRESENTATION
     auto game_language_config = Service::CFG::GetModule(system);
+    MM3D::PlayerSettings::language_profile.store(MM3D::PlayerSettings::ProfileFromRecordFile(
+        FileUtil::GetUserPath(FileUtil::UserPath::User) + "setup/ready.json"));
     MM3D::PlayerSettings::InitializeGameLanguage(*game_language_config);
     const auto apply_game_language = [&] {
         MM3D::PlayerSettings::ApplyPendingGameLanguage(*game_language_config);
@@ -482,6 +484,17 @@ jfloat Java_org_citra_citra_1emu_NativeLibrary_dekuiScrollbarCenter(JNIEnv*,jcla
     return -1.f;
 }
 
+jint Java_org_citra_citra_1emu_NativeLibrary_getDekuiLanguageProfile(JNIEnv*,jclass) {
+#ifdef ENABLE_MM3D_PRESENTATION
+    auto& system = Core::System::GetInstance();
+    if (system.IsPoweredOn()) return MM3D::PlayerSettings::language_profile.load();
+    // Power off: the installed deck's record is authoritative either way.
+    return MM3D::PlayerSettings::ProfileFromRecordFile(
+        FileUtil::GetUserPath(FileUtil::UserPath::User) + "setup/ready.json");
+#else
+    return 0;
+#endif
+}
 jint Java_org_citra_citra_1emu_NativeLibrary_getDekuiGameLanguage(JNIEnv*,jclass) {
 #ifdef ENABLE_MM3D_PRESENTATION
     auto& system = Core::System::GetInstance();
@@ -493,8 +506,13 @@ jint Java_org_citra_citra_1emu_NativeLibrary_getDekuiGameLanguage(JNIEnv*,jclass
 }
 jboolean Java_org_citra_citra_1emu_NativeLibrary_setDekuiGameLanguage(JNIEnv*,jclass,jint language) {
 #ifdef ENABLE_MM3D_PRESENTATION
-    if (!MM3D::PlayerSettings::SupportedLanguage(language)) return false;
     auto& system = Core::System::GetInstance();
+    const int profile = system.IsPoweredOn()
+                            ? MM3D::PlayerSettings::language_profile.load()
+                            : MM3D::PlayerSettings::ProfileFromRecordFile(
+                                  FileUtil::GetUserPath(FileUtil::UserPath::User) +
+                                  "setup/ready.json");
+    if (!MM3D::PlayerSettings::SupportedLanguage(language, profile)) return false;
     if (system.IsPoweredOn()) {
         MM3D::PlayerSettings::game_language_status.store(1);
         MM3D::PlayerSettings::set_game_language.store(language);
