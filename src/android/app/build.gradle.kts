@@ -100,7 +100,7 @@ android {
         // the Play Store listing, which was originally set up for Lime3DS, to still be used.
         applicationId = "org.azahar_emu.azahar"
         if (dekuiPresentation) {
-            applicationId = "io.github.otpr26.dekuifork"
+            applicationId = "io.github.yukojp.dekuifork"
         }
         buildConfigField("boolean", "DEKUI_PRESENTATION", dekuiPresentation.toString())
         manifestPlaceholders["applicationLabel"] = if (dekuiPresentation) "Majora ReMasked" else "@string/app_name"

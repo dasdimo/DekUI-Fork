@@ -16,7 +16,7 @@ Majora ReMasked builds on [tgacquin’s DekUI](https://github.com/tgacquin/mm3d-
 - A full-screen menu for touch, mouse, and controllers; Android also supports a swipe from the left edge during gameplay.
 - Controller bindings and button-layout preferences, touch overlay controls, and screen swapping.
 - Remappable R3 Pictograph control, independent of equipped items.
-- English, French and Spanish game-language selection before starting gameplay.
+- Game-language selection before starting gameplay: English, French and Spanish for USA game files; all five European languages for Europe game files, with **Русский** in place of English for Russian game files.
 - Separate presentation and native game FPS counters.
 - Customizable Wii U Style HUD with adjustable positions, scale, spacing, and visibility; custom texture-folder selection through Android’s file picker.
 - Separate Field of View and Camera Distance controls; adjustable walk, climb, and swim speeds.
@@ -38,7 +38,7 @@ No game ROM, imported player model, imported voices, save file, or personal text
 
 These appearance mods need broader gameplay testing. Some masks, facial expressions, and attachments still need broader testing with Adult Link. Texture replacement depends on a matching texture being present in the selected pack. The experimental Cheats page can remain disabled when its live save-layout check does not match; it is not advertised as a reliable save editor.
 
-Android uses `io.github.otpr26.dekuifork`. When moving from the prototype, grant file access to reuse Internal storage/mm3dport, then reselect external texture folders. Existing saves, generated mods, HUD settings, and shared controller bindings are retained. Close the prototype before using the new app.
+The Android build uses `io.github.yukojp.dekuifork` and installs alongside the original Majora ReMasked app rather than replacing it. Grant file access to the same Internal storage/mm3dport folder to reuse existing saves, generated mods, HUD settings, and shared controller bindings, and reselect external texture folders; folder grants belong to the other app's ID. Close the other app before switching.
 
 ## Credits and license
 

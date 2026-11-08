@@ -175,7 +175,7 @@ jobs:
           if not re.search(r'Signer #1 certificate SHA-256 digest: '+expected, cert):
               raise SystemExit('APK signing identity does not match this fork release key')
           badging = subprocess.check_output([str(sdk/'aapt'), 'dump', 'badging', str(apk)], text=True)
-          if "name='io.github.otpr26.dekuifork'" not in badging.splitlines()[0]:
+          if "name='io.github.yukojp.dekuifork'" not in badging.splitlines()[0]:
               raise SystemExit('APK application ID changed')
           if "versionName='"+os.environ['RELEASE_VERSION']+"'" not in badging.splitlines()[0]:
               raise SystemExit('APK version does not match the release')
@@ -265,7 +265,7 @@ jobs:
               if 'Signer #1 certificate SHA-256 digest: '+expected not in cert:
                   raise SystemExit('Unexpected signing identity')
               badge = subprocess.check_output([str(sdk/'aapt'),'dump','badging',str(path)],text=True)
-              if "name='io.github.otpr26.dekuifork'" not in badge.splitlines()[0]:
+              if "name='io.github.yukojp.dekuifork'" not in badge.splitlines()[0]:
                   raise SystemExit('Unexpected application ID')
           verify(base)
           library = Path('src/android/app/build/dekuiJniLibs/arm64-v8a/libnod.so')

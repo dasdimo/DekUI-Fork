@@ -1,4 +1,4 @@
-package io.github.otpr26.dekuifork.settingscheck;
+package io.github.yukojp.dekuifork.settingscheck;
 
 import android.app.Instrumentation;
 import android.content.Context;

@@ -28,16 +28,16 @@ Touch overlay controls remain available for phones. Menu scale can be adjusted f
 
 Disk shader cache is currently disabled in this preview configuration after testing found startup stalls and geometry artifacts with the Adult Link model. Do not treat the experimental Cheats page as a save editor: its compatibility guards may leave it unavailable.
 
-## Upgrading from the prototype
+## Installing alongside other builds
 
-The release uses `io.github.otpr26.dekuifork`. Android treats it as a new app,
-so it installs beside the early prototype. Close the prototype first, grant
-file access in the new app, and keep Internal storage/mm3dport in place. The
-new app reuses its prepared game, saves, generated mods, HUD, and controller
-bindings. Reselect external texture folders; Android folder grants belong to
-the old app ID. Select the OoT3D source again only when regenerating a mod.
-After checking the new app, the prototype may be uninstalled.
+This fork builds as `io.github.yukojp.dekuifork`, so it installs beside the
+original Majora ReMasked release instead of replacing it. Android keeps each
+app's data separate: close the other app first, then grant file access to the
+same Internal storage/mm3dport folder. The new app reuses its prepared game,
+saves, generated mods, HUD, and controller bindings. Reselect external texture
+folders; Android folder grants belong to the other app ID. Select the OoT3D
+source again only when regenerating a mod.
 
 The Pictograph Box defaults to R3 (right-stick click), independent of equipped items. Change or clear its binding in Controls. Android Back opens settings; the L3+R3 settings shortcut also remains available.
 
-Before launching, choose English, French or Spanish under Settings → General → Game language. Startup and in-game settings share the saved language; changes during gameplay apply after restarting the game. Settings menus remain in English.
+Before launching, choose the game text language under Settings → General → Game language. USA game files offer English, French and Spanish; Europe game files offer English, French, German, Spanish and Italian; a Russian game file shows **Русский** in place of English. Startup and in-game settings share the saved language; changes during gameplay apply after restarting the game. Settings menus remain in English.

@@ -5,8 +5,9 @@
 
 - Your already-translated Europe game file from the ZELDA64RUS v1.1 patch (`.cxi`) installs directly: setup recognizes it, keeps the Russian text, and never re-translates it.
 - Europe games pick their text language during setup: **Russian** (ZELDA64RUS community translation with matching Cyrillic fonts) or **English** (the original European text). Android Setup asks which one you want; desktop game preparation accepts `--text-language rus|stock`.
-- The language list in Settings and the in-game menu now matches the installed game: USA games offer English, French and Spanish; Europe games offer all five built-in languages; Russian games offer **Русский** plus the five Europe languages. A Russian game still holding an older Europe language setting repairs itself to Russian on start.
+- The language list in Settings and the in-game menu now matches the installed game: USA games offer English, French and Spanish; Europe games offer all five built-in languages; Russian games replace the English entry with **Русский** and keep the other four Europe languages. A Russian game still holding an older Europe language setting repairs itself to Russian on start.
 - The About screens now describe supported game files and the text language choice.
+- Android builds now use the app ID `io.github.yukojp.dekuifork`, so they install alongside the original Majora ReMasked release instead of replacing it. Grant file access to the same game-data folder to keep using your prepared game, saves, and mods.
 
 ## Majora ReMasked 0.5.1 — Moving Game Data
 *A DekUI Fork*

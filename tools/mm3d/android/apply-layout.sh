@@ -8,7 +8,7 @@ adb_bin=${ADB:-"$HOME/Library/Android/sdk/platform-tools/adb"}
 rom=${1:-"$HOME/Documents/Legend of Zelda, The - Majora's Mask 3D (USA) (En,Fr,Es) (Rev 1).cci"}
 # This helper targets shared data used by the development build.
 remote=/sdcard/mm3dport
-package=io.github.otpr26.dekuifork.debug
+package=io.github.yukojp.dekuifork.debug
 "$adb_bin" get-state
 "$adb_bin" shell test -d "$remote/config"
 stage=$(python3 "$repo_root/tools/mm3d/android/prepare-layouts.py" "$rom" --output "$repo_root/artifacts/android")

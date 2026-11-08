@@ -1,5 +1,5 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="io.github.otpr26.dekuifork.settingscheck">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="io.github.yukojp.dekuifork.settingscheck">
     <uses-sdk android:minSdkVersion="29" android:targetSdkVersion="35" />
     <application android:label="Settings storage check" android:hasCode="true" />
-    <instrumentation android:name="io.github.otpr26.dekuifork.settingscheck.StoreCheck" android:targetPackage="io.github.otpr26.dekuifork" />
+    <instrumentation android:name="io.github.yukojp.dekuifork.settingscheck.StoreCheck" android:targetPackage="io.github.yukojp.dekuifork" />
 </manifest>
