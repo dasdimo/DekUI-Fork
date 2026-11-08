@@ -80,7 +80,9 @@ class DekuiSettingsActivity : AppCompatActivity() {
             result.onSuccess {
                 android.app.AlertDialog.Builder(this@DekuiSettingsActivity).setTitle("Game data moved")
                     .setMessage("The game folder is now:\n${target.path}\n\nThe app must close so the emulator can start with the new location. Open Majora ReMasked again from your launcher.")
-                    .setCancelable(false).setPositiveButton("Close app"){ android.os.Process.killProcess(android.os.Process.myPid()) }.show()
+                    .setCancelable(false).setPositiveButton("Close app") { _: android.content.DialogInterface?, _: Int ->
+                        android.os.Process.killProcess(android.os.Process.myPid())
+                    }.show()
             }.onFailure { error(it) }
             render()
         }
