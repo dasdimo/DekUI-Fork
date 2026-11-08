@@ -164,7 +164,10 @@ object DekuiGameSetup {
                 val target = mods.child(item.getString("output")); target.parentFile!!.mkdirs(); target.writeBytes(output)
             }
             // Expand message storage from the verified user ROM, never from bundled game data.
-            val englishArchive = messages.getJSONObject("text").getJSONObject("english").getString("name")
+            // The rus profile has no English archive at all: text.english is JSON null, so
+            // the lookup must not require an object; every archived name then takes the
+            // localized expansion path.
+            val englishArchive = messages.getJSONObject("text").optJSONObject("english")?.getString("name")
             for (name in archiveNames) {
                 var data = sources.getValue("original/$sourceDir/$name.gmsg")
                 fun expand(id: Int, capacity: Int) {
