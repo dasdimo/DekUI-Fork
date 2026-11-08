@@ -263,6 +263,9 @@ elseif (BUNDLE_TARGET_DOWNLOAD_LINUXDEPLOY)
                 # linuxdeploy's plugin loader looks for linuxdeploy-plugin-checkrt.
                 get_filename_component(plugin_name "${executable_name}" NAME)
                 string(REGEX REPLACE "\\.sh$" "" plugin_name "${plugin_name}")
+                # squashfs-root/usr/bin may not exist yet: this copy runs before
+                # the main linuxdeploy AppImage is extracted into it.
+                file(MAKE_DIRECTORY "${base_dir}/squashfs-root/usr/bin")
                 file(COPY_FILE "${executable_file}"
                     "${base_dir}/squashfs-root/usr/bin/${plugin_name}")
                 file(CHMOD "${base_dir}/squashfs-root/usr/bin/${plugin_name}"
