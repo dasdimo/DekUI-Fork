@@ -164,7 +164,7 @@ def main():
     if sys.platform.startswith('linux'):
         archive = root/'python.tar.gz'
         name = f'cpython-3.13.2%2B20250317-{machine}-unknown-linux-gnu-install_only_stripped.tar.gz'
-        download('https://github.com/astral-sh/python-build-standalone/releases/download/20250317/'+name,archive)
+        download(name,archive)
         if hashlib.sha256(archive.read_bytes()).hexdigest() != LINUX_PYTHON[machine]:
             raise RuntimeError('Linux Python checksum mismatch')
         with tarfile.open(archive) as tar:
