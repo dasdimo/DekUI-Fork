@@ -36,8 +36,9 @@ class GraphicalSetupTests(unittest.TestCase):
                 files.append({'input_root':'restoration','input':name if path.parent==bundled else 'romfs/layout/'+name,
                               'input_sha256':hashlib.sha256(data).hexdigest()})
             (resources/'setup-fingerprints.json').write_text(json.dumps({'files':files}))
-            def check_stage(app,stage,game,copy_game=True,reference_game=False):
+            def check_stage(app,stage,game,copy_game=True,reference_game=False,text_language=None):
                 self.assertEqual(app,root);self.assertEqual(game,rom)
+                self.assertEqual(text_language,'stock')
                 for entry in files:self.assertEqual((stage/entry['input']).read_bytes(),Path(entry['input']).name.encode())
             with patch.object(graphical_setup,'RESOURCES',resources),patch('graphical_setup.validate'),patch('graphical_setup.setup',side_effect=check_stage) as setup:
                 prepare(root,rom);setup.assert_called_once()
@@ -52,6 +53,32 @@ class GraphicalSetupTests(unittest.TestCase):
                 (bundled/'code.bps').unlink()
                 with self.assertRaisesRegex(ValueError,'missing'):prepare(root,rom)
                 self.assertEqual(setup.call_count,1)
+
+    def _prepare_language(self, rom_profile):
+        # Runs prepare() with bundled inputs stubbed out and reports the text
+        # language it hands to setup().
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);resources=root/'resources';resources.mkdir()
+            bundled=resources/'project-restoration';hud=bundled/'romfs/layout';hud.mkdir(parents=True)
+            for name in ('code.bps','exheader.bin'):(bundled/name).write_bytes(b'x')
+            for name in ('Joker.Main.New.gar','Joker.Main.Play.gar','Joker.mfpj'):(hud/name).write_bytes(b'x')
+            (resources/'setup-fingerprints.json').write_text(json.dumps({'files':[]}))
+            rom=root/'game.3ds';rom.write_bytes(b'game')
+            with patch.object(graphical_setup,'RESOURCES',resources),patch('graphical_setup.validate',return_value=rom_profile),patch('graphical_setup.setup') as setup:
+                prepare(root,rom)
+            return setup.call_args.kwargs['text_language']
+
+    def test_europe_desktop_setup_keeps_stock_text(self):
+        europe={'title_id':'0004000000125600','main_partition_sha256':'0'*64}
+        self.assertEqual(self._prepare_language(europe),'stock')
+
+    def test_usa_desktop_setup_keeps_stock_text(self):
+        usa={'title_id':'0004000000125500','main_partition_sha256':'0'*64}
+        self.assertEqual(self._prepare_language(usa),'stock')
+
+    def test_russian_dump_keeps_russian_text(self):
+        russian={'title_id':'0004000000125600','main_partition_sha256':'0'*64,'text_language':'rus'}
+        self.assertEqual(self._prepare_language(russian),'rus')
 
     def test_publish_failure_removes_only_new_game(self):
         with tempfile.TemporaryDirectory() as tmp:

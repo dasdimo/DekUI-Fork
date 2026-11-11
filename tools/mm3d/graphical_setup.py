@@ -14,7 +14,10 @@ def prepare(root, rom, patch=None, exheader=None, hud=None, in_place=False, upgr
     if (root/'user').exists() and not upgrade_existing:
         raise ValueError('This folder already has user data. Choose a fresh application folder; existing saves will not be replaced.')
     if not rom.is_file(): raise ValueError('Select your decrypted game file (.cci or .3ds).')
-    validate(rom)
+    selected_rom = validate(rom)
+    # Desktop setup keeps the game's own text (Europe: En/Fr/De/Es/It) instead of
+    # silently installing the Russian pack. A dump that is already Russian keeps it.
+    text_language = 'rus' if selected_rom.get('text_language') == 'rus' else 'stock'
     bundled = RESOURCES/'project-restoration'
     patch = patch if patch is not None else bundled/'code.bps'
     exheader = exheader if exheader is not None else bundled/'exheader.bin'
@@ -40,7 +43,7 @@ def prepare(root, rom, patch=None, exheader=None, hud=None, in_place=False, upgr
             from upgrade_game_resources import upgrade
             result = upgrade(root,rom,restoration)
         else:
-            result = setup(root,restoration,rom,copy_game=not in_place,reference_game=reference_game)
+            result = setup(root,restoration,rom,copy_game=not in_place,reference_game=reference_game,text_language=text_language)
         from desktop_hud import apply, apply_controls
         apply_controls(root/'user', RESOURCES)
         apply(root/'user', RESOURCES)
