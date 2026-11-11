@@ -57,6 +57,14 @@ class WindowsPackageTest(unittest.TestCase):
                 self.assertEqual(Path(command[2]).name, 'Majora-ReMasked.exe')
                 self.assertNotEqual(Path(command[2]), bundle/'azahar.exe')
                 self.assertEqual((bundle/'azahar.exe').read_bytes(), b'test')
+                # An sdl2-compat SDL2.dll cannot start without SDL3.dll beside it.
+                (bundle/'SDL2.dll').write_bytes(b'MZ sdl2-compat SDL3.dll')
+                with self.assertRaisesRegex(ValueError, 'needs SDL3.dll'):
+                    package_windows.package(bundle, root/'no-sdl3.zip', python_archive)
+                (bundle/'SDL3.dll').write_bytes(b'MZ SDL3')
+                package_windows.package(bundle, root/'sdl3.zip', python_archive)
+                with zipfile.ZipFile(root/'sdl3.zip') as archive:
+                    self.assertIn('dekui/SDL3.dll', archive.namelist())
             with zipfile.ZipFile(output) as archive:
                 names = set(archive.namelist())
                 archive.extractall(root/'unpacked')

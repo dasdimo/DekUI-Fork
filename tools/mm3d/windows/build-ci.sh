@@ -16,6 +16,11 @@ cmake -S . -B build-windows -G Ninja \
 cmake --build build-windows --parallel 4
 ctest --test-dir build-windows -C Release --output-on-failure
 cmake --build build-windows --target bundle --parallel 4
+# MSYS2 now ships SDL2 as sdl2-compat, which loads SDL3.dll at runtime; the
+# bundle's dependency scan cannot see that, so the app would fail to start.
+if grep -aq 'sdl2-compat' build-windows/bundle/SDL2.dll; then
+  cp /ucrt64/bin/SDL3.dll build-windows/bundle/
+fi
 mkdir -p build-windows/bundle/licenses
 cp -R /ucrt64/share/licenses/. build-windows/bundle/licenses/
 python tools/mm3d/windows_python.py build-windows/python-embed.zip

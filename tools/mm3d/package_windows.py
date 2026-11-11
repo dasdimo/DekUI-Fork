@@ -36,6 +36,10 @@ def package(bundle, output, python_archive, architecture='x64', strip_tool=None)
             if p.is_file() and allowed:
                 target = root / rel; target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(p, target)
+        # sdl2-compat is only a shim that loads SDL3.dll at startup.
+        sdl2 = root / 'SDL2.dll'
+        if sdl2.is_file() and b'sdl2-compat' in sdl2.read_bytes() and not (root / 'SDL3.dll').is_file():
+            raise ValueError('SDL2.dll is sdl2-compat and needs SDL3.dll beside it')
         scripts = root / 'tools/mm3d'; scripts.mkdir(parents=True)
         for name in SCRIPTS:
             shutil.copy2(ROOT / 'tools/mm3d' / name, scripts / name)
